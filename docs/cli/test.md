@@ -8,13 +8,26 @@
 cmu test [options]
 ```
 
+::: danger NODE.JS 22 REQUIRED
+The test DevNet needs **Node.js 22 or newer**, even though the CLI itself runs on Node 20.12+. The check runs before the compile, so a too-old runtime fails immediately rather than after spending a build:
+
+```bash
+error: test failed
+the local DevNet needs Node.js 22 or newer, but this is Node v20.12.0.
+    npm skips EDR's native binary on older Node without reporting it, so no chain can start.
+hint: upgrade Node.js, or install a version manager such as nvm or fnm.
+```
+:::
+
 ## Options
 
-| Flag            | Description                                                                                                        |
-| --------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `--gas`         | Enable the gas profiler to report gas consumed per transaction during tests.                                       |
-| `--allow-cors`  | Allow browser (cross-origin) access to the local test RPC proxy. Off by default to prevent DNS-rebinding attacks.   |
-| `-v, --verbose` | Enable verbose logging for debugging.                                                                              |
+| Flag           | Description                                                                                                      |
+| -------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `--gas`        | Report gas used by transactions during the run.                                                                  |
+| `--allow-cors` | Allow cross-origin browser access to the test RPC proxy. Off by default to prevent DNS rebinding.                |
+| `-y, --yes`    | Skip the confirmation prompt before executing project code.                                                      |
+
+`-v, --verbose` is available globally; see [Global Options](/docs/cli/overview#global-options).
 
 ## Requirements
 
@@ -26,13 +39,18 @@ cmu test [options]
 If the `test/` directory does not exist, the command exits with an error before starting the DevNet.
 :::
 
+## Executing Project Code
+
+`cmu test` compiles first, and the compile loads `cmu.config.ts/js` as code. The CLI lists the file and asks for confirmation before it runs. Pass `-y, --yes` to skip the prompt; in a non-interactive session the command refuses rather than continuing. See [the trust model](/docs/cli/deploy#trust-model).
+
 ## Pre-Test Steps
 
 Before running any test file, the command performs the following steps automatically:
 
-1. **Compile** — triggers `cmu compile` to ensure all contract artifacts are up to date.
-2. **Start ephemeral DevNet** — starts an in-process EVM network and fronts it with a local JSON-RPC proxy on port `8555` with Chain ID `1912`.
-3. **Inject environment** — passes network credentials to the test process via environment variables.
+1. **Check the runtime** — refuses immediately on Node older than 22.
+2. **Compile** — triggers `cmu compile` to ensure all contract artifacts are up to date.
+3. **Start ephemeral DevNet** — starts an in-process Hardhat 3 network and fronts it with a local JSON-RPC proxy on port `8555` with Chain ID `1912`.
+4. **Inject environment** — passes network credentials to the test process via environment variables.
 
 ## Ephemeral DevNet
 
@@ -40,17 +58,26 @@ The test DevNet is created fresh for every `cmu test` run and destroyed immediat
 
 | Parameter       | Value                   |
 | --------------- | ----------------------- |
-| RPC URL         | `http://127.0.0.1:8555` |
+| RPC endpoint    | `http://127.0.0.1:8555` |
 | Chain ID        | `1912`                  |
 | Accounts        | 10 pre-funded accounts  |
-| Default Balance | `100 ETH` each          |
-| Mining Mode     | Strict instamine        |
+| Default balance | `100 ETH` each          |
 | Logging         | Quiet (suppressed)      |
+
+The chain is an in-process Hardhat 3 network running on EDR, created with a config override and served through the CLI's own JSON-RPC proxy rather than Hardhat's `node` task.
 
 The first generated account's private key is automatically used as the deployer for test transactions. Accounts are derived from a random mnemonic on every run, so the deployer address differs between invocations.
 
-::: info
-On Windows, a process already holding port `8555` is detected and terminated before the proxy binds. On Linux and macOS this reclaim step is a no-op and always reports the port as free, so free the port manually if the proxy fails to start.
+::: warning
+Port `8555` is never freed on your behalf. If something already holds it, the run stops rather than killing the process that owns it:
+
+```bash
+error: test failed
+port 8555 is already in use.
+hint: stop the process using it, then run `cmu test` again.
+```
+
+Free the port yourself and re-run. This applies identically on every platform.
 :::
 
 ## RPC Access Control
@@ -60,7 +87,7 @@ The test RPC proxy listens only on `127.0.0.1` and additionally rejects requests
 Refused requests receive HTTP `403` with a JSON-RPC error of code `-32600`:
 
 ```bash
-Forbidden: cross-origin or non-local request rejected. Pass --allow-cors to cmu test for browser access.
+Forbidden: cross-origin or non-local request rejected. Pass --allow-cors to cmu test to allow browser access.
 ```
 
 This protects the unlocked test accounts from DNS-rebinding attacks, where a malicious page resolves its own hostname to `127.0.0.1` and issues signed transactions against the local node.
@@ -77,7 +104,7 @@ The following variables are injected into the test process at runtime:
 | -------------- | ---------------------------- |
 | `CMU_RPC_URL`  | `http://127.0.0.1:8555`      |
 | `CMU_CHAIN_ID` | `1912`                       |
-| `PRIVATE_KEY`  | Private key of account `[0]` |
+| `PRIVATE_KEY`  | Private key of account `#0`  |
 
 These variables are available inside test files for constructing providers and signers.
 
@@ -98,18 +125,24 @@ When `--gas` is provided, the command generates a gas usage report after all tes
 
 ```bash
 =========================================================================================
-Gas Profiler Report
+Gas profile
 =========================================================================================
 | Block | Transaction Hash                                                   | Gas Used |
 -----------------------------------------------------------------------------------------
 | 1     | 0x...                                                              | 21000    |
 | 2     | 0x...                                                              | 84123    |
 -----------------------------------------------------------------------------------------
-Total Gas Used: 105123
+Total gas used: 105123
 ```
 
 ::: info
-The gas profiler reads from the ephemeral DevNet before it is shut down. If the profiler encounters an error, it prints a warning and the DevNet is still closed cleanly.
+Reporting is a convenience, not part of the run. If the profiler fails it prints a warning and the already-decided test result stands:
+
+```bash
+warning: could not produce the gas report; the tests themselves were unaffected.
+```
+
+Pass `-v` to see the underlying error. The DevNet is still closed cleanly either way.
 :::
 
 ## Shutdown
@@ -117,7 +150,7 @@ The gas profiler reads from the ephemeral DevNet before it is shut down. If the 
 After all tests and the gas profiler complete, the ephemeral DevNet is closed automatically:
 
 ```bash
-Ephemeral test network successfully shut down.
+CointMU DevNet stopped.
 ```
 
 The shutdown runs in a `finally` block, ensuring the DevNet is always stopped even if the test suite fails.
@@ -125,17 +158,23 @@ The shutdown runs in a `finally` block, ensuring the DevNet is always stopped ev
 ## Success Output
 
 ```bash
-Triggering automated contract compilation...
-Starting ephemeral CointMU DevNet for testing...
+Compiling contracts...
+Compiled StandardERC20
+Starting the CointMU DevNet...
 
 ========================================
-Running tests via Mocha
+Running tests with Mocha
 ========================================
 
 [test output]
 
-All tests executed successfully.
-Ephemeral test network successfully shut down.
+All tests passed.
+CointMU DevNet stopped.
 ```
 
-If any test fails, the command exits with code `1` and prints the error.
+If any test fails, the command exits with code `1`:
+
+```bash
+error: test failed
+test run exited with code 1
+```

@@ -216,7 +216,6 @@ All templates scaffolded by `cmu create` are **zero-dependency** — they do not
 | `airdrop`     | None                  | Full              | Merkle tree airdrop with self-contained proof verification. No OZ `MerkleProof` dependency.        |
 | `vault`       | None                  | Full              | Multisig timelock treasury. No OZ `TimelockController` dependency.                                 |
 | `kyberion`    | None                  | Full              | Post-quantum cryptography research prototype. All PQC logic is placeholder — not production ready. |
-| `nft`         | None                  | Full              | Alias for `erc721`.                                                                                |
 
 ::: warning PRAGMA NOTE
 All built-in templates use `pragma solidity ^0.8.20`. While the contracts themselves are EVM `paris` compatible, `cmu compile` enforces `evmVersion: "paris"` by default which overrides the compiler's default `shanghai` target. No manual config change is required as long as you compile via `cmu compile`.

@@ -15,11 +15,7 @@ cmu --version
 cmu -V
 ```
 
-## Options
-
-| Flag            | Description                            |
-| --------------- | -------------------------------------- |
-| `-v, --verbose` | Enable verbose logging for debugging.  |
+`-v, --verbose` is available globally; see [Global Options](/docs/cli/overview#global-options).
 
 ## Overview
 
@@ -29,14 +25,14 @@ The command reads version metadata from the local `package.json` and the build i
 
 ```bash
 cmu
-version      : 1.3.4
-codename     : Griffin
-build        : 8c8a5e8e
+version      : 1.3.7
+codename     : Argus
+build        : e1f38f6
 architecture : x64
-node         : v20.11.0
-solidity     : 0.8.26+commit.8a97fa7a.Emscripten.clang
-ethers       : 6.x.x
-git commit   : a1b2c3d
+node         : v24.19.0
+solidity     : 0.8.37+commit.f401782d.Emscripten.clang
+ethers       : 6.17.0
+git commit   : e1f38f6
 ```
 
 ## Output Fields
@@ -45,7 +41,7 @@ git commit   : a1b2c3d
 | -------------- | ---------------------------- | -------------------------------------------------------------------------------------------- |
 | `version`      | `package.json`               | The current semantic version of the `cmu` CLI.                                               |
 | `codename`     | `package.json`               | The release codename of the current version.                                                 |
-| `build`        | Bundled build identifier     | The 8-character build identifier of the CLI binary.                                          |
+| `build`        | Bundled build identifier     | The short Git hash of the commit the CLI was built from.                                     |
 | `architecture` | `process.arch`               | The CPU architecture of the current runtime (e.g., `x64`, `arm64`).                          |
 | `node`         | `process.version`            | The active Node.js runtime version.                                                          |
 | `solidity`     | `solc` package               | The full version string of the bundled Solidity compiler.                                    |
@@ -57,5 +53,9 @@ git commit   : a1b2c3d
 :::
 
 ::: info
-The build identifier is resolved from the first source that is available, in order: the value inlined into the bundle at build time, then `build-info.json`, then the `BUILD` variable in the repository `Makefile`. If none can be read, the field displays `unknown`.
+The build identifier is stamped into the bundle at build time by resolving `git rev-parse --short HEAD` in the build tree. It is baked in, so it identifies the commit the binary was built from even when the installed package has no `.git` directory. When the CLI runs unbundled — from source via `ts-node`, for example — nothing was stamped and the field displays `unknown`.
+:::
+
+::: info
+`build` and `git commit` come from different places and can legitimately disagree. `build` is fixed at build time; `git commit` is resolved at runtime from the CLI's install directory. For a published npm install, there is no repository to read, so `git commit` reads `unknown` while `build` still names the release commit.
 :::

@@ -10,10 +10,11 @@ cmu audit [options]
 
 ## Options
 
-| Flag            | Description                                                                                     |
-| --------------- | ----------------------------------------------------------------------------------------------- |
-| `--fix`         | Automatically applies safe patches where the underlying tools support non-breaking remediation. |
-| `-v, --verbose` | Enable verbose logging for debugging.                                                           |
+| Flag    | Description                                                                                     |
+| ------- | ----------------------------------------------------------------------------------------------- |
+| `--fix` | Automatically applies safe patches where the underlying tools support non-breaking remediation. |
+
+`-v, --verbose` is available globally; see [Global Options](/docs/cli/overview#global-options).
 
 ## Audit Workflow
 
@@ -54,9 +55,18 @@ If static analysis finds vulnerabilities or formatting issues, a warning is prin
 The command prints a step indicator for each phase during execution:
 
 ```bash
-[1/2] Auditing Node.js Dependencies
-[2/2] Static Analysis of Solidity Contracts
-[+] Audit process completed.
+[1/2] Auditing Node.js dependencies
+> npm audit
+[2/2] Analysing Solidity contracts
+> npx solhint contracts/**/*.sol
+Audit complete.
+```
+
+Each child process is echoed before it runs, prefixed with `>`. A tool reporting findings is downgraded to a warning so a dirty dependency tree does not mask the Solidity pass that follows it:
+
+```bash
+warning: npm audit reported issues in the dependency tree.
+warning: solhint reported issues in the Solidity sources.
 ```
 
 If an unexpected error prevents the audit from running entirely, the command prints an error message and exits with code `1`.

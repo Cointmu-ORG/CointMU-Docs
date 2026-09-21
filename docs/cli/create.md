@@ -24,11 +24,20 @@ If validation fails, the command exits before any files are generated.
 
 ## Options
 
-| Flag                        | Description                                   | Allowed Values                                                                                                |
-| --------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `-t, --template <template>` | Select the scaffold template to generate.     | `blank`, `erc20`, `erc721`, `erc1155`, `dao`, `marketplace`, `staking`, `airdrop`, `vault`, `kyberion`, `nft` |
-| `-l, --language <language>` | Select the project language for the scaffold. | `typescript`, `javascript`                                                                                    |
-| `-v, --verbose`             | Enable verbose logging for debugging.         | —                                                                                                             |
+| Flag                        | Description                                   | Allowed Values                                                                                          |
+| --------------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `-t, --template <template>` | Select the scaffold template to generate.     | `blank`, `erc20`, `erc721`, `erc1155`, `dao`, `marketplace`, `staking`, `airdrop`, `vault`, `kyberion` |
+| `-l, --language <language>` | Select the project language for the scaffold. | `typescript`, `javascript`                                                                              |
+
+`-v, --verbose` is available globally; see [Global Options](/docs/cli/overview#global-options).
+
+An unknown template is rejected before anything is written, and the error lists every valid one:
+
+```bash
+error: create failed
+unknown template 'nft'.
+hint: choose one of: blank, erc20, erc721, erc1155, dao, marketplace, staking, airdrop, vault, kyberion
+```
 
 ## Interactive Mode
 
@@ -56,11 +65,6 @@ All values are validated against their respective allowed values before project 
 | `airdrop`     | Merkle tree token airdrop project.                                                             |
 | `vault`       | Multisig timelock treasury project.                                                            |
 | `kyberion`    | Post-quantum cryptography research prototype.                                                  |
-| `nft`         | Alias for `erc721`.                                                                            |
-
-::: info
-`nft` is accepted by `--template` but is not offered in the interactive picker and is not listed in the command's own `-h` output. It generates exactly the same project as `erc721`.
-:::
 
 ## Dependency Installation
 
@@ -83,9 +87,15 @@ Built-in contract templates are self-contained and pull in no Solidity dependenc
 After a successful scaffold, the CLI prints a confirmation banner and the standard next steps:
 
 ```bash
-[SUCCESS] CointMU project '<project>' initialized!
+   ______      _       __  _____  __
+  / ____/___  (_)___  / /_/ __  \/ / /
+ / /   / __ \/ / __ \/ __/ / / / / / /
+/ /___/ /_/ / / / / / /_/ / / / / /_/ /
+\____/\____/_/_/ /_/\__/_/ /_/_/\____/
 
-[>] Next steps to start building:
+Created CointMU project '<project>'
+
+Next steps:
   1. cd <project>
   2. cmu compile
   3. cmu deploy

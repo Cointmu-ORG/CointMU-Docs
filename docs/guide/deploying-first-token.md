@@ -138,25 +138,37 @@ cmu deploy
 **Expected output:**
 
 ```bash
-Triggering automated contract compilation...
-Compiled CMUS successfully.
+warning: the following project files will be executed as code:
+      cmu.config.ts       ->  /home/you/my-token/cmu.config.ts
+      01_deploy_cmus.ts   ->  /home/you/my-token/deploy/01_deploy_cmus.ts
 
---- Deployment Metadata ---
-Network Name  : cointmu
-RPC URL       : http://10.64.24.248:8585
-Chain ID      : 1912
-Deployer      : 0x...
----------------------------
+? Execute these files? Yes
+
+Compiling contracts...
+Compiled CMUS
+
+--- Deploy configuration ---
+Network      : mainnet
+RPC endpoint : http://10.64.24.248:8585
+Chain ID     : 1912
+Deployer     : 0x...
+----------------------------
+
+Found 1 deploy script(s); running them in order...
 
 ========================================
-Executing: 01_deploy_cmus.ts
+Running 01_deploy_cmus.ts
 ========================================
 
 Deploying CMUS token...
 CMUS deployed to: 0x...
 
-All deployment scripts executed successfully.
+All deploy scripts completed.
 ```
+
+::: info
+The first prompt is the trust gate: deploy scripts run with your decrypted `PRIVATE_KEY` in their environment, so the CLI lists every project file it is about to execute and asks before running any of it. Pass `-y, --yes` in a pipeline. See [the trust model](/docs/cli/deploy#trust-model).
+:::
 
 ## 8. Verify the Deployment
 
@@ -174,8 +186,9 @@ console.log("Symbol:", await token.symbol());
 console.log("Total Supply:", ethers.formatEther(await token.totalSupply()));
 ```
 
-You can also open the block explorer via:
+Or confirm the on-chain state from the CLI:
 
 ```bash
-cmu explorer open
+cmu network ping
+cmu wallet balance
 ```

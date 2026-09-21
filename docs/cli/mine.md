@@ -8,17 +8,7 @@
 cmu mine <subcommand> [options]
 ```
 
-## Options
-
-Both `cmu mine` subcommands accept the same option:
-
-| Flag            | Description                            |
-| --------------- | -------------------------------------- |
-| `-v, --verbose` | Enable verbose logging for debugging.  |
-
-::: info
-The flag belongs to the subcommand, not to `cmu mine` itself. Write `cmu mine start -v`, not `cmu mine -v start`.
-:::
+`-v, --verbose` is available globally; see [Global Options](/docs/cli/overview#global-options).
 
 ## Subcommands
 
@@ -32,7 +22,15 @@ The flag belongs to the subcommand, not to `cmu mine` itself. Write `cmu mine st
 Both subcommands require an active session. Run `cmu wallet login` before using any `cmu mine` command.
 
 ::: warning
-If no active session is found, the command exits immediately with an error. The session file is read from `.cmu-session` in the current working directory.
+If no active session is found, the command exits immediately:
+
+```bash
+error: mine start failed
+no active session.
+hint: run `cmu wallet login` first.
+```
+
+The session file is read from `.cmu-session` in the current working directory.
 :::
 
 ---
@@ -58,9 +56,9 @@ cmu mine start
 
 ```bash
 Setting etherbase to 0x...
-Starting miner on cointmu...
-Successfully started mining!
-Rewards are being routed to: 0x...
+Starting miner on local...
+Mining started.
+Rewards are routed to 0x...
 ```
 
 ---
@@ -84,8 +82,8 @@ cmu mine stop
 ### Output
 
 ```bash
-Stopping miner on cointmu...
-Successfully stopped mining.
+Stopping miner on local...
+Mining stopped.
 ```
 
 ---
