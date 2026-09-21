@@ -48,7 +48,6 @@ export default defineConfig({
           { text: "cmu wallet", link: "/docs/cli/wallet" },
           { text: "cmu network", link: "/docs/cli/network" },
           { text: "cmu node", link: "/docs/cli/node" },
-          { text: "cmu explorer", link: "/docs/cli/explorer" },
           { text: "cmu version", link: "/docs/cli/version" },
           { text: "cmu update", link: "/docs/cli/update" },
         ],

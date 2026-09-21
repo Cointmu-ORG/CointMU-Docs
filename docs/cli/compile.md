@@ -10,9 +10,26 @@ cmu compile [options]
 
 ## Options
 
-| Flag            | Description                            |
-| --------------- | -------------------------------------- |
-| `-v, --verbose` | Enable verbose logging for debugging.  |
+| Flag        | Description                                                 |
+| ----------- | ----------------------------------------------------------- |
+| `-y, --yes` | Skip the confirmation prompt before executing project code. |
+
+`-v, --verbose` is available globally; see [Global Options](/docs/cli/overview#global-options).
+
+## Executing Project Code
+
+`cmu.config.ts/js` is `require()`d from the working directory, which makes it arbitrary code. Before it is loaded, `cmu compile` lists it and asks for confirmation:
+
+```bash
+warning: the following project files will be executed as code:
+      cmu.config.ts  ->  /home/you/my-token/cmu.config.ts
+```
+
+Pass `-y, --yes` to skip the prompt. In a non-interactive session the command refuses rather than continuing. The full behavior is documented under [the trust model](/docs/cli/deploy#trust-model).
+
+::: info
+A project with no `cmu.config.ts/js` has nothing to execute, so no prompt appears and compilation starts immediately.
+:::
 
 ## Required Project Layout
 
@@ -40,7 +57,7 @@ Only `.sol` files at the **top level** of `contracts/` are compiled. Sources pla
 1. `cmu.config.ts`
 2. `cmu.config.js`
 
-If a configuration file is found, the command loads `compiler.settings` from the exported config object and merges it into the compiler input before compilation.
+If a configuration file is found, the command confirms trust, loads `compiler.settings` from the exported config object, and merges it into the compiler input before compilation.
 
 ```ts
 // cmu.config.ts
@@ -64,7 +81,11 @@ When a `.ts` config file is detected, the command loads it using `ts-node` in tr
 | `evmVersion`      | `paris`                                     |
 | `outputSelection` | ABI + `evm.bytecode.object` always emitted. |
 
-If the config file cannot be loaded, the command prints a warning and continues with defaults.
+If the config file cannot be loaded, the command prints a warning and continues with defaults:
+
+```bash
+warning: could not load cmu.config.ts; using default compiler settings.
+```
 
 ::: warning
 `outputSelection` is applied **after** your settings are merged, so a custom value in `cmu.config` is always overridden. Every other key in `compiler.settings`, including `evmVersion` and `optimizer`, is honored.
@@ -108,3 +129,28 @@ Each generated artifact is written as a formatted JSON file containing the compi
 | `evm.bytecode.object` | Compiled contract binary for deployment.       |
 
 These artifacts are consumed by deployment scripts and other build-time tooling in the pipeline.
+
+## Output
+
+```bash
+Compiling 3 Solidity file(s)...
+Compiled StandardERC20
+Compiled IERC20
+Compiled Ownable
+```
+
+A Solidity error stops the run:
+
+```bash
+error: compile failed
+compilation aborted on Solidity errors.
+hint: fix the errors reported above, then run `cmu compile` again.
+```
+
+Run from outside a project root:
+
+```bash
+error: compile failed
+contracts/ directory not found.
+hint: run `cmu compile` from the root of your CointMU project.
+```

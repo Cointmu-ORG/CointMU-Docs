@@ -5,134 +5,73 @@
 ## Usage
 
 ```bash
-cmu network [options]
-cmu network <subcommand>
-```
-
-## Options
-
-| Flag                  | Description                                                              |
-| --------------------- | ------------------------------------------------------------------------ |
-| `-s, --save <url>`    | Save a new network or update an existing one. Requires `--name`.         |
-| `-n, --name <name>`   | The name of the network to save. Used only together with `--save`.       |
-| `-u, --use <name>`    | Switch the active network to the specified name.                         |
-| `-l, --list`          | List all saved networks.                                                 |
-| `-D, --delete <name>` | Delete a saved network.                                                  |
-| `-v, --verbose`       | Enable verbose logging for debugging.                                    |
-
-::: warning
-The delete flag is a **capital** `-D`. A lowercase `-d` is not registered and is rejected as an unknown option.
-:::
-
-## Option Precedence
-
-Only one action runs per invocation. The command evaluates its options in a fixed order and returns after the first match:
-
-1. `--save`
-2. `--delete`
-3. `--use`
-4. `--list`
-
-Running `cmu network` with no options behaves identically to `cmu network --list`. Any other combination — for example `--name` without `--save` — matches none of the branches, and the command prints a usage hint without modifying anything:
-
-```bash
-Please provide a valid network command option. Run 'cmu network --help' for usage.
+cmu network <subcommand> [options]
 ```
 
 ## Subcommands
 
-| Subcommand                 | Description                                        |
-| -------------------------- | -------------------------------------------------- |
-| `cmu network info`         | Display the active network configuration.          |
-| `cmu network ping [name]`  | Ping a network to check connectivity and latency.  |
+| Subcommand                          | Description                                        |
+| ----------------------------------- | -------------------------------------------------- |
+| `cmu network save <url> --name <n>` | Save a new network or update an existing one.      |
+| `cmu network list`                  | List all saved networks.                           |
+| `cmu network use <name>`            | Switch the active network.                         |
+| `cmu network delete <name>`         | Delete a saved network.                            |
+| `cmu network info`                  | Show the active network.                           |
+| `cmu network ping [name]`           | Ping a network to check connectivity and latency.  |
+
+Running `cmu network` with no subcommand lists the saved networks, exactly as `cmu network list` does.
+
+::: tip
+`-v, --verbose` is a global flag declared on `cmu` itself, so it works anywhere on the line — `cmu -v network list`, `cmu network -v list` and `cmu network list -v` are equivalent.
+:::
 
 ---
 
-## cmu network --save
+## cmu network save
 
-Saves a network to the local network store, or overwrites the RPC URL of an existing entry with the same name.
+Saves a network to the local network store, or overwrites the RPC endpoint of an existing entry with the same name.
 
 ### Usage
 
 ```bash
-cmu network --save http://10.64.24.248:8585 --name mainnet
+cmu network save http://10.64.24.248:8585 --name mainnet
 ```
+
+### Options
+
+| Flag                | Description                            |
+| ------------------- | -------------------------------------- |
+| `-n, --name <name>` | Name to save the network under. Required. |
 
 ### Behavior
 
-`--name` is required. If it is omitted, the command exits with:
+`--name` is required. Omitting it exits with:
 
 ```bash
---name is required when using --save.
+error: network save failed
+--name is required.
+hint: e.g. `cmu network save http://127.0.0.1:8585 --name local`.
 ```
 
-Saving does not change the active network. Use `--use` to switch to it afterwards.
+The endpoint is validated before anything is written. Only `http:` and `https:` are accepted, because every provider in the CLI is an ethers `JsonRpcProvider` and cannot speak another scheme:
+
+```bash
+error: network save failed
+invalid RPC endpoint 'ftp://node.example'.
+hint: pass a full http:// or https:// URL, e.g. `cmu network save http://127.0.0.1:8585 --name local`.
+```
+
+Saving does not change the active network. Use `cmu network use` to switch to it afterwards.
 
 ### Output
 
 ```bash
-Successfully saved network 'mainnet' (http://10.64.24.248:8585)
+Saved network 'mainnet' (http://10.64.24.248:8585)
 ```
 
 ---
 
-## cmu network --use
-
-Switches the active network recorded in the current wallet session.
-
-### Usage
-
-```bash
-cmu network --use mainnet
-```
-
-### Requirements
-
-An active wallet session must exist. Run `cmu wallet login` first. Without a session file the command exits with `No active wallet session found. Please run 'cmu wallet login' first.`
-
-The target network must already be saved. An unknown name exits with `Network '<name>' not found.`
-
-### Behavior
-
-The command rewrites the `activeNetwork` field inside `.cmu-session` in the current working directory. All commands that resolve a network from the session — including `cmu wallet balance`, `cmu mine start`, and `cmu network ping` — use the new selection immediately.
-
-### Output
-
-```bash
-Successfully switched active network to: mainnet
-```
-
----
-
-## cmu network --delete
-
-Removes a network from the saved network store.
-
-### Usage
-
-```bash
-cmu network --delete staging
-```
-
-### Behavior
-
-The command refuses to delete the network currently selected in the session:
-
-```bash
-Cannot delete the currently active network ('local'). Please switch to another network first using 'cmu network --use <name>'.
-```
-
-Switch to a different network with `--use` before deleting.
-
-### Output
-
-```bash
-Successfully deleted network 'staging'.
-```
-
----
-
-## cmu network --list
+## cmu network list
 
 Prints every saved network and marks the active one with `[*]`.
 
@@ -140,16 +79,16 @@ Prints every saved network and marks the active one with `[*]`.
 
 ```bash
 cmu network
-cmu network --list
+cmu network list
 ```
 
 ### Output
 
 ```bash
 
-Saved Networks
+Saved networks
 ==========================================================================
-| Active | Name                 | RPC URL
+| Active | Name                 | RPC endpoint
 --------------------------------------------------------------------------
 | [*]    | local                | http://127.0.0.1:8585
 |        | mainnet              | http://10.64.24.248:8585
@@ -163,9 +102,83 @@ If no session file exists, the listing falls back to marking `local` as active. 
 
 ---
 
+## cmu network use
+
+Switches the active network recorded in the current wallet session.
+
+### Usage
+
+```bash
+cmu network use mainnet
+```
+
+### Requirements
+
+An active wallet session must exist. Without one the command exits with:
+
+```bash
+error: network use failed
+no active session.
+hint: run `cmu wallet login` first.
+```
+
+The target network must already be saved. An unknown name exits with:
+
+```bash
+error: network use failed
+network 'mainnet' is not saved.
+hint: list saved networks with `cmu network list`.
+```
+
+### Behavior
+
+The command rewrites the `activeNetwork` field inside `.cmu-session` in the current working directory. All commands that resolve a network from the session — including `cmu wallet balance`, `cmu mine start`, and `cmu network ping` — use the new selection immediately.
+
+### Output
+
+```bash
+Active network is now mainnet
+```
+
+::: warning
+Running [`cmu wallet login`](/docs/cli/wallet) again resets the active network to `local`, discarding the selection made here. Re-run `cmu network use <name>` after any login.
+:::
+
+---
+
+## cmu network delete
+
+Removes a network from the saved network store.
+
+### Usage
+
+```bash
+cmu network delete staging
+```
+
+### Behavior
+
+The command refuses to delete the network currently selected in the session:
+
+```bash
+error: network delete failed
+network 'local' is currently active and cannot be deleted.
+hint: switch away first with `cmu network use <name>`.
+```
+
+Switch to a different network with `cmu network use` before deleting. Deleting a name that was never saved exits with `network '<name>' is not saved.`
+
+### Output
+
+```bash
+Deleted network 'staging'
+```
+
+---
+
 ## cmu network info
 
-Displays the active network name and RPC URL resolved from the current session.
+Displays the active network name and RPC endpoint resolved from the current session.
 
 ### Usage
 
@@ -173,28 +186,28 @@ Displays the active network name and RPC URL resolved from the current session.
 cmu network info
 ```
 
-### Options
-
-| Flag            | Description                            |
-| --------------- | -------------------------------------- |
-| `-v, --verbose` | Enable verbose logging for debugging.  |
-
 ### Requirements
 
-An active wallet session with a selected network must exist. The command exits with code `1` if the session file is missing, if the session has no `activeNetwork`, or if the recorded network name is not present in the saved network store.
+An active wallet session with a selected network must exist. Each way of not having one is reported separately:
+
+| Condition                              | Message                                             |
+| -------------------------------------- | --------------------------------------------------- |
+| No `.cmu-session`                      | `no active session.`                                |
+| Session has no `activeNetwork`         | `no active network in the session.`                 |
+| Selected network no longer saved       | `active network '<name>' is no longer saved.`       |
 
 ### Output
 
 ```bash
---- Active Network Info ---
-Network Name : local
-RPC URL      : http://127.0.0.1:8585
----------------------------
+--- Active network ---
+Network      : local
+RPC endpoint : http://127.0.0.1:8585
+----------------------
 ```
 
 ---
 
-## cmu network ping [name]
+## cmu network ping
 
 Measures round-trip latency to a network by requesting its current block number.
 
@@ -207,15 +220,9 @@ cmu network ping mainnet
 
 ### Arguments
 
-| Argument | Description                                                                                  |
-| -------- | -------------------------------------------------------------------------------------------- |
-| `[name]` | Optional. The saved network to ping. Defaults to the session's active network when omitted.  |
-
-### Options
-
-| Flag            | Description                            |
-| --------------- | -------------------------------------- |
-| `-v, --verbose` | Enable verbose logging for debugging.  |
+| Argument | Description                                                                                 |
+| -------- | ------------------------------------------------------------------------------------------- |
+| `[name]` | Optional. The saved network to ping. Defaults to the session's active network when omitted. |
 
 ### Behavior
 
@@ -227,14 +234,55 @@ Latency is measured as the elapsed time around a single `eth_blockNumber` call, 
 
 ```bash
 Pinging local (http://127.0.0.1:8585)...
---- Ping Results ---
-Network Name : local
-Block Number : 1482
+--- Ping result ---
+Network      : local
+Block number : 1482
 Latency      : 12ms
---------------------
+-------------------
 ```
 
 The command exits with code `1` if the endpoint is unreachable.
+
+---
+
+## Deprecated Flags
+
+Before the subcommands existed, `cmu network` took its actions as flags on the root command. Those flags still work, print a deprecation notice, and run the same handler the subcommand would.
+
+| Deprecated flag       | Replacement                            |
+| --------------------- | -------------------------------------- |
+| `-s, --save <url>`    | `cmu network save <url> --name <name>` |
+| `-u, --use <name>`    | `cmu network use <name>`               |
+| `-l, --list`          | `cmu network list`                     |
+| `-D, --delete <name>` | `cmu network delete <name>`            |
+
+Each prints, before doing the work:
+
+```bash
+warning: `cmu network --save` is deprecated and will be removed in 2.0.0
+hint: use `cmu network save <url> --name <name>` instead.
+```
+
+::: danger REMOVED IN 2.0.0
+These flags are scheduled for removal in `2.0.0`. Migrate scripts and CI pipelines to the subcommand form now.
+:::
+
+Only one action runs per invocation. The flags are evaluated in a fixed order and the command returns after the first match:
+
+1. `--save`
+2. `--delete`
+3. `--use`
+4. `--list`
+
+::: warning
+`-n, --name` is **not** deprecated — it is how `cmu network save` receives its name, and it is declared on the root command as well as on the subcommand.
+
+A combination that matches none of the four branches falls through to the network listing. In particular `cmu network --name prod`, which is what a forgotten `--save` looks like, prints the saved-network table and exits `0` without saving anything. Check the output for a `Saved network '<name>'` line before assuming a save succeeded, or use the subcommand form, which reports the missing name as an error.
+:::
+
+::: info
+The delete flag is a **capital** `-D`. A lowercase `-d` is not registered and is rejected as an unknown option.
+:::
 
 ---
 
@@ -242,10 +290,10 @@ The command exits with code `1` if the endpoint is unreachable.
 
 Saved networks are kept in `.cmu-networks.json` as an array of entries:
 
-| Field    | Description                             |
-| -------- | --------------------------------------- |
-| `name`   | The identifier used by `--use` and `--delete`. |
-| `rpcUrl` | The JSON-RPC endpoint of the network.   |
+| Field    | Description                                    |
+| -------- | ---------------------------------------------- |
+| `name`   | The identifier used by `use` and `delete`.     |
+| `rpcUrl` | The JSON-RPC endpoint of the network.          |
 
 On first read the file is seeded with a single entry, `local` pointing at `http://127.0.0.1:8585`.
 
