@@ -25,14 +25,14 @@ The command reads version metadata from the local `package.json` and the build i
 
 ```bash
 cmu
-version      : 1.3.7
-codename     : Argus
-build        : e1f38f6
+version      : 1.3.8
+codename     : Ryu
+build        : 38a52f0
 architecture : x64
 node         : v24.19.0
 solidity     : 0.8.37+commit.f401782d.Emscripten.clang
 ethers       : 6.17.0
-git commit   : e1f38f6
+git commit   : 38a52f0
 ```
 
 ## Output Fields
