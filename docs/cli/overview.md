@@ -4,19 +4,21 @@
 
 ## Command Overview
 
-| Command       | Purpose                                                               |
-| ------------- | --------------------------------------------------------------------- |
-| `cmu create`  | Scaffold a new CointMU project from a selectable template.            |
-| `cmu compile` | Compile Solidity contracts and generate contract artifacts.           |
-| `cmu deploy`  | Execute deployment scripts sequentially from the `deploy/` directory. |
-| `cmu test`    | Run the contract test suite against an ephemeral local DevNet.        |
-| `cmu audit`   | Run dependency checks and Solidity static analysis.                   |
-| `cmu wallet`  | Generate wallets and manage the encrypted local session.              |
-| `cmu network` | Save, list, switch, and ping the RPC networks available to the CLI.   |
-| `cmu node`    | Test RPC connectivity or start a local development network.           |
-| `cmu mine`    | Start and stop block mining on the active network.                    |
-| `cmu version` | Print CLI, runtime, and dependency versions.                          |
-| `cmu update`  | Upgrade the CLI to the latest release from the npm registry.          |
+| Command        | Purpose                                                               |
+| -------------- | --------------------------------------------------------------------- |
+| `cmu create`   | Scaffold a new CointMU project from a selectable template.            |
+| `cmu compile`  | Compile Solidity contracts and generate contract artifacts.           |
+| `cmu deploy`   | Execute deployment scripts sequentially from the `deploy/` directory. |
+| `cmu console`  | Open an interactive REPL against the configured network.              |
+| `cmu explorer` | Query block and contract information over RPC.                        |
+| `cmu test`     | Run the contract test suite against an ephemeral local DevNet.        |
+| `cmu audit`    | Run dependency checks and Solidity static analysis.                   |
+| `cmu wallet`   | Generate wallets and manage the encrypted local session.              |
+| `cmu network`  | Save, list, switch, and ping the RPC networks available to the CLI.   |
+| `cmu node`     | Test RPC connectivity or start a local development network.           |
+| `cmu mine`     | Start and stop block mining on the active network.                    |
+| `cmu version`  | Print CLI, runtime, and dependency versions.                          |
+| `cmu update`   | Upgrade the CLI to the latest release from the npm registry.          |
 
 ::: tip
 Run `cmu <command> -h` to see the detailed options for any individual command.
@@ -65,7 +67,7 @@ The DevNet commands need a newer runtime than the rest of the CLI because they r
 
 ## Executing Project Code
 
-`cmu compile`, `cmu deploy`, and `cmu test` execute files from your project directory — `cmu.config.ts/js` is `require()`d, and every script in `deploy/` runs with your decrypted `PRIVATE_KEY` in its environment. The CLI lists those files and asks for confirmation before any of them run.
+`cmu compile`, `cmu deploy`, `cmu test`, `cmu console`, and `cmu explorer` execute files from your project directory — `cmu.config.ts/js` is `require()`d, and every script in `deploy/` runs with your decrypted `PRIVATE_KEY` in its environment. The CLI lists those files and asks for confirmation before any of them run.
 
 Pass `-y, --yes` to skip the prompt in a pipeline you trust. See [the trust model](/docs/cli/deploy#trust-model) on the `cmu deploy` page.
 
@@ -82,13 +84,15 @@ cmu deploy
 
 After deployment, use the remaining commands to validate and operate the project environment:
 
-| Command             | When to use                                           |
-| ------------------- | ----------------------------------------------------- |
-| `cmu test`          | Run contract tests against a throwaway local chain.   |
-| `cmu audit`         | Security review for dependencies and smart contracts. |
-| `cmu node connect`  | Verify RPC endpoint connectivity.                     |
-| `cmu network list`  | Review which networks are saved and which is active.  |
-| `cmu wallet create` | Generate wallets for local development.               |
+| Command             | When to use                                                       |
+| ------------------- | ----------------------------------------------------------------- |
+| `cmu test`          | Run contract tests against a throwaway local chain.               |
+| `cmu audit`         | Security review for dependencies and smart contracts.             |
+| `cmu explorer`      | Inspect a block, or confirm a deployment landed on-chain.         |
+| `cmu console`       | Call a deployed contract interactively, without writing a script. |
+| `cmu node connect`  | Verify RPC endpoint connectivity.                                 |
+| `cmu network list`  | Review which networks are saved and which is active.              |
+| `cmu wallet create` | Generate wallets for local development.                           |
 
 ## Command Reference
 
@@ -97,6 +101,8 @@ Use the linked pages for full command-specific behavior, options, and validation
 - [cmu create](/docs/cli/create)
 - [cmu compile](/docs/cli/compile)
 - [cmu deploy](/docs/cli/deploy)
+- [cmu console](/docs/cli/console)
+- [cmu explorer](/docs/cli/explorer)
 - [cmu audit](/docs/cli/audit)
 - [cmu test](/docs/cli/test)
 - [cmu mine](/docs/cli/mine)

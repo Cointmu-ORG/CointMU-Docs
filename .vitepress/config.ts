@@ -42,6 +42,8 @@ export default defineConfig({
           { text: "cmu create", link: "/docs/cli/create" },
           { text: "cmu compile", link: "/docs/cli/compile" },
           { text: "cmu deploy", link: "/docs/cli/deploy" },
+          { text: "cmu console", link: "/docs/cli/console" },
+          { text: "cmu explorer", link: "/docs/cli/explorer" },
           { text: "cmu audit", link: "/docs/cli/audit" },
           { text: "cmu test", link: "/docs/cli/test" },
           { text: "cmu mine", link: "/docs/cli/mine" },
