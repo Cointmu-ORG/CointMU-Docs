@@ -125,7 +125,7 @@ Top-level `await` works at the prompt, so `await provider.getBlockNumber()` is e
 A missing key is **not** an error. The console still opens, `signer` is `undefined`, and `getContract()` falls back to the provider:
 
 ```bash
-Signer       : none (read-only) - run `cmu wallet login`
+Signer       : none (no key) - run `cmu wallet use <name>`, or set PRIVATE_KEY in .env or cmu.config.ts
 ```
 
 A key that is present but unusable *is* an error, and the console refuses to open:
@@ -141,12 +141,8 @@ hint: expected a 32-byte hex key (0x-prefixed); run `cmu console --no-signer` to
 `--no-signer` starts the console read-only whatever key is reachable. No session password prompt appears, `signer` is `undefined`, and `getContract()` binds to the provider — even when `PRIVATE_KEY` is set or `cmu.config` supplies `wallet.privateKey`:
 
 ```bash
-Signer       : none (read-only) - run `cmu wallet login`
+Signer       : none (--no-signer)
 ```
-
-::: info
-The `run cmu wallet login` hint on that line is printed whether or not a key was found, and the trust prompt still mentions a decrypted `PRIVATE_KEY`. Neither applies under `--no-signer`. Tracked as [CointMU-CLI#185](https://github.com/Cointmu-ORG/CointMU-CLI/issues/185).
-:::
 
 ## Loading a Contract
 
