@@ -104,7 +104,7 @@ If none yields a key:
 ```bash
 error: deploy failed
 no private key available for signing.
-hint: run `cmu wallet login`, or set PRIVATE_KEY in .env or cmu.config.ts.
+hint: run `cmu wallet use <name>`, or set PRIVATE_KEY in .env or cmu.config.ts.
 ```
 
 ::: info

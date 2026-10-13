@@ -19,7 +19,7 @@ cmu mine <subcommand> [options]
 
 ## Requirements
 
-Both subcommands require an active session. Run `cmu wallet login` before using any `cmu mine` command.
+Both subcommands require an active session. Run [`cmu wallet use <name>`](/docs/cli/wallet#cmu-wallet-use) before using any `cmu mine` command.
 
 ::: warning
 If no active session is found, the command exits immediately:
@@ -27,7 +27,7 @@ If no active session is found, the command exits immediately:
 ```bash
 error: mine start failed
 no active session.
-hint: run `cmu wallet login` first.
+hint: run `cmu wallet use <name>` first, or `cmu wallet create --save <name>` and then `cmu wallet use <name>`.
 ```
 
 The session file is read from `.cmu-session` in the current working directory.
@@ -103,7 +103,7 @@ Mining stopped.
 
 ## Session File
 
-Both subcommands depend on `.cmu-session`, a local file written by `cmu wallet login`. This file stores the active wallet address and network identifier used to route mining rewards and resolve the RPC endpoint.
+Both subcommands depend on `.cmu-session`, a local file written by `cmu wallet use`. This file stores the active wallet address and network identifier used to route mining rewards and resolve the RPC endpoint.
 
 ::: info
 The `.cmu-session` file is resolved relative to the current working directory. Always run `cmu mine` commands from the root of your CointMU project.

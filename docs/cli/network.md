@@ -119,7 +119,7 @@ An active wallet session must exist. Without one the command exits with:
 ```bash
 error: network use failed
 no active session.
-hint: run `cmu wallet login` first.
+hint: run `cmu wallet use <name>` first, or `cmu wallet create --save <name>` and then `cmu wallet use <name>`.
 ```
 
 The target network must already be saved. An unknown name exits with:
@@ -141,7 +141,7 @@ Active network is now mainnet
 ```
 
 ::: info
-The selection survives a later [`cmu wallet login`](/docs/cli/wallet#active-network), `cmu wallet create --login`, or `cmu wallet use`. Each of them carries the session's active network over, and only falls back to `local` if the selected network has since been deleted.
+The selection survives a later [`cmu wallet use`](/docs/cli/wallet#active-network). It carries the session's active network over, and only falls back to `local` if the selected network has since been deleted.
 :::
 
 ---
