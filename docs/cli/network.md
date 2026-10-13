@@ -127,7 +127,7 @@ The target network must already be saved. An unknown name exits with:
 ```bash
 error: network use failed
 network 'mainnet' is not saved.
-hint: list saved networks with `cmu network list`.
+hint: list saved networks with `cmu network list`, or add one with `cmu network save <url> --name <name>`.
 ```
 
 ### Behavior
@@ -140,8 +140,8 @@ The command rewrites the `activeNetwork` field inside `.cmu-session` in the curr
 Active network is now mainnet
 ```
 
-::: warning
-Running [`cmu wallet login`](/docs/cli/wallet) again resets the active network to `local`, discarding the selection made here. Re-run `cmu network use <name>` after any login.
+::: info
+The selection survives a later [`cmu wallet login`](/docs/cli/wallet#active-network), `cmu wallet create --login`, or `cmu wallet use`. Each of them carries the session's active network over, and only falls back to `local` if the selected network has since been deleted.
 :::
 
 ---

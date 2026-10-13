@@ -18,8 +18,8 @@ Prebuilt installers are not yet published as releases; the application is curren
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/kakonoomoidee/CointMU.git
-   cd CointMU
+   git clone https://github.com/Cointmu-ORG/CointMU-App.git
+   cd CointMU-App
    ```
 
 2. Place the `geth` binary for your platform in `resources/bin/` (`geth.exe` on Windows, `geth` on Linux and macOS). On Linux and macOS, make it executable:

@@ -33,6 +33,19 @@ hint: run `cmu wallet login` first.
 The session file is read from `.cmu-session` in the current working directory.
 :::
 
+::: warning
+`cmu mine` needs a node that implements the `miner_*` JSON-RPC methods, such as geth. The local DevNet started by [`cmu node start`](/docs/cli/node) does not — it mines a block for every transaction on its own — so both subcommands fail against it with a raw provider error:
+
+```bash
+Setting etherbase to 0x70997970C51812dc3A010C7d01b50e0d17dc79C8...
+
+error: mine start failed
+could not coalesce error (error={ "code": -32004, "message": "Method miner_setEtherbase is not supported" }, ...)
+```
+
+Tracked as [CointMU-CLI#184](https://github.com/Cointmu-ORG/CointMU-CLI/issues/184).
+:::
+
 ---
 
 ## cmu mine start

@@ -63,7 +63,7 @@ cmu --help
 Use this method to contribute to the CLI or test unreleased changes.
 
 ```bash
-git clone https://github.com/kakonoomoidee/CointMU-CLI.git
+git clone https://github.com/Cointmu-ORG/CointMU-CLI.git
 cd CointMU-CLI
 npm install
 npm run build

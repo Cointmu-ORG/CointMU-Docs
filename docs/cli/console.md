@@ -18,17 +18,13 @@ cmu console [options]
 
 ## Options
 
-| Flag                   | Description                                                             |
-| ---------------------- | ----------------------------------------------------------------------- |
-| `-n, --network <name>` | Network to connect to, by name from `cmu.config.ts`.                    |
-| `--no-signer`          | Skip the session password prompt and start without unlocking a session. |
-| `-y, --yes`            | Skip the confirmation prompt before executing project code.             |
+| Flag                   | Description                                                              |
+| ---------------------- | ------------------------------------------------------------------------ |
+| `-n, --network <name>` | Network to connect to, by name from `cmu.config.ts`.                     |
+| `--no-signer`          | Start read-only: skip signer resolution and the session password prompt. |
+| `-y, --yes`            | Skip the confirmation prompt before executing project code.              |
 
 `-v, --verbose` is available globally; see [Global Options](/docs/cli/overview#global-options).
-
-::: warning
-`--no-signer` does **not** guarantee a read-only console. It suppresses the session password prompt, but a key found in `.env`, in the ambient environment, or in `cmu.config.ts` still produces a signer. See [The `--no-signer` Flag](#the-no-signer-flag).
-:::
 
 ## Network Resolution
 
@@ -80,7 +76,7 @@ Once the network is resolved and the endpoint answers, the console prints its co
 
 ```bash
 Pinging http://127.0.0.1:8585...
-Connected to 'unknown' (chain ID 1912).
+Connected to 'local' (chain ID 1912).
 
 --- Console configuration ---
 Network      : local
@@ -92,10 +88,6 @@ Preloaded    : provider, signer, ethers, getContract(name, address)
 
 cmu>
 ```
-
-::: info
-`Connected to 'unknown'` is expected. The name comes from ethers, which has no registered label for chain ID `1912`; the `Network` line below it shows the name the CLI resolved. Tracked as [CointMU-CLI#138](https://github.com/kakonoomoidee/CointMU-CLI/issues/138).
-:::
 
 If the endpoint does not answer within 3 seconds, the console does not open:
 
@@ -146,22 +138,14 @@ hint: expected a 32-byte hex key (0x-prefixed); run `cmu console --no-signer` to
 
 ### The `--no-signer` Flag
 
-`--no-signer` sets `noPrompt` on the network resolver. In practice that means it suppresses **priority 3 only** — the encrypted-session password prompt — and lets a console open in a project whose `.cmu-session` is locked.
+`--no-signer` starts the console read-only whatever key is reachable. No session password prompt appears, `signer` is `undefined`, and `getContract()` binds to the provider — even when `PRIVATE_KEY` is set or `cmu.config` supplies `wallet.privateKey`:
 
-It does not override priorities 1 and 2. This is the behavior as shipped in `1.3.8`:
+```bash
+Signer       : none (read-only) - run `cmu wallet login`
+```
 
-| Key source                          | Result with `--no-signer`     |
-| ----------------------------------- | ----------------------------- |
-| `PRIVATE_KEY` in `.env`             | Signer attached               |
-| `PRIVATE_KEY` in the ambient env    | Signer attached               |
-| `wallet.privateKey` in `cmu.config` | Signer attached               |
-| Encrypted session only              | `none (read-only)`, no prompt |
-| No key anywhere                     | `none (read-only)`            |
-
-::: danger
-Do not rely on `--no-signer` to make a console incapable of signing. Where a key is reachable without a prompt, the flag's help text (`Start read-only`) does not describe what happens, and an accidental state-changing call at the prompt will be broadcast. To be certain a console cannot sign, start it in an environment with no `PRIVATE_KEY` set and no `wallet.privateKey` in the config.
-
-This gap is tracked as [CointMU-CLI#135](https://github.com/kakonoomoidee/CointMU-CLI/issues/135).
+::: info
+The `run cmu wallet login` hint on that line is printed whether or not a key was found, and the trust prompt still mentions a decrypted `PRIVATE_KEY`. Neither applies under `--no-signer`. Tracked as [CointMU-CLI#185](https://github.com/Cointmu-ORG/CointMU-CLI/issues/185).
 :::
 
 ## Loading a Contract
