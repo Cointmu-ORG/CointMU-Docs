@@ -66,7 +66,7 @@ Block number : 5686
 ```
 
 ::: info
-`Network` reports the name **ethers** resolves for the chain ID, not the name the endpoint is saved under. ethers has no registered name for chain `1912`, so this field reads `unknown` against a CointMU node even when the connection is healthy. Use `Chain ID` to confirm you reached the right chain, and [`cmu network info`](/docs/cli/network) to see the saved name.
+`Network` reports the name **ethers** resolves for the chain ID, not the name the endpoint is saved under. ethers has no registered name for chain `1912`, so this field reads `unknown` against a CointMU node even when the connection is healthy. Use `Chain ID` to confirm you reached the right chain, and [`cmu network info`](/docs/cli/network) to see the saved name. Other commands print the saved name instead; tracked as [CointMU-CLI#187](https://github.com/Cointmu-ORG/CointMU-CLI/issues/187).
 :::
 
 ---
@@ -122,12 +122,20 @@ The default port `8585` is the same port the Nginx security proxy binds to in a 
 
 ### Port Handling
 
-The port is validated before the chain boots. Anything outside `1`–`65535`, or not a number, is rejected:
+The port is validated before the chain boots. It must be a whole number in decimal between `1` and `65535`; anything else is rejected rather than replaced with a default:
+
+| Input    | Result                                 |
+| -------- | -------------------------------------- |
+| `8585`   | Accepted.                              |
+| `99999`  | Rejected — out of range.               |
+| `0`      | Rejected — out of range.               |
+| `85x5`   | Rejected — not a number.               |
+| `8585.5` | Rejected — not a whole number.         |
 
 ```bash
 error: node start failed
-invalid port '99999'.
-hint: pass a port between 1 and 65535, e.g. `cmu node start -p 8585`.
+'99999' is not a valid port number.
+hint: use a number between 1 and 65535, e.g. `cmu node start -p 8585`.
 ```
 
 A port that is already taken is **reported, never freed**. Killing whatever holds a port is a surprising default that can take out an unrelated process, so the command stops instead:

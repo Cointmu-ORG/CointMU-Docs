@@ -100,6 +100,13 @@ Escape it once with:
 This affects CLI builds at `1.3.2` and older, which updated themselves from git rather than the registry. Running the `npm install -g cointmu-cli@latest` line once moves the install onto the registry, after which `cmu update` works normally.
 :::
 
+A release that was published moments ago can resolve on the registry before its tarball is downloadable. npm then fails with an `E404` for the tarball URL, which the command explains as a delay rather than a missing version:
+
+```bash
+version 1.4.0 resolves on the registry but its tarball has not finished propagating yet.
+hint: wait a minute or two, then run `cmu update` again.
+```
+
 Any other install failure reports `npm install failed; see the npm output above.`
 
 ::: info

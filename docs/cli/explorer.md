@@ -58,17 +58,15 @@ Like [`cmu console`](/docs/cli/console) and [`cmu deploy`](/docs/cli/deploy), th
 
 Run outside a project, with no `cmu.config.ts` to read, the explorer targets the local devnet at `http://127.0.0.1:8585` (chain ID `1912`).
 
-::: warning
-A network defined in `cmu.config.ts` with an empty `url` — as the scaffolded `mainnet` entry ships — is not caught as a configuration error. The command waits out the RPC timeout and reports the endpoint as unreachable with the URL missing from the message:
+A network defined with an empty `url` — as the scaffolded `mainnet` entry ships — fails immediately, before any connection is attempted:
 
 ```bash
-Pinging ...
 error: explorer failed
-RPC endpoint  is unreachable (timed out after 3000ms).
+the resolved network has no url.
+hint: set `url` for this network in cmu.config.ts.
 ```
 
-Set `networks.<name>.url` before querying that network. Tracked as [CointMU-CLI#136](https://github.com/kakonoomoidee/CointMU-CLI/issues/136).
-:::
+The hint names `cmu.config.ts` even in a project whose config is `cmu.config.js`. Tracked as [CointMU-CLI#186](https://github.com/Cointmu-ORG/CointMU-CLI/issues/186).
 
 ## Trust Model
 
@@ -78,6 +76,12 @@ Resolving the network means `require()`ing `cmu.config.ts/js` from the working d
 warning: the following project files will be executed as code:
       cmu.config.ts  ->  /home/you/my-token/cmu.config.ts
 
+    They are require()d as code to read this project's configuration, run with
+    your full environment, and can do anything your user account can. This
+    command does not sign anything and does not unlock your session. This is the
+    same trust model as Hardhat, Foundry and Truffle; see the 'Trust Model'
+    section of the README.
+
 ? Execute these files? (y/N)
 ```
 
@@ -85,8 +89,6 @@ warning: the following project files will be executed as code:
 
 ::: info
 Outside a project there is no config to execute, so no prompt appears and the command runs straight against the local devnet.
-
-The warning text shown at the prompt is shared with `cmu deploy` and mentions an injected `PRIVATE_KEY`. That part does not apply here — the explorer resolves no key at all. Tracked as [CointMU-CLI#137](https://github.com/kakonoomoidee/CointMU-CLI/issues/137).
 :::
 
 ## Looking Up a Block
@@ -97,7 +99,7 @@ cmu explorer --block 1
 
 ```bash
 Pinging http://127.0.0.1:8585...
-Connected to 'unknown' (chain ID 1912).
+Connected to 'local' (chain ID 1912).
 
 --- Block 1 on 'local' ---
 Hash         : 0xcaa982dc649b2f6c4e338944b26e3a005d07205bd298d8ab64a7a68807303a84

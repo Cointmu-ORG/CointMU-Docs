@@ -43,6 +43,21 @@ If the `test/` directory does not exist, the command exits with an error before 
 
 `cmu test` compiles first, and the compile loads `cmu.config.ts/js` as code. The CLI lists the file and asks for confirmation before it runs. Pass `-y, --yes` to skip the prompt; in a non-interactive session the command refuses rather than continuing. See [the trust model](/docs/cli/deploy#trust-model).
 
+::: warning
+The prompt comes from the compile step, so it describes the compile, not the test run:
+
+```bash
+warning: the following project files will be executed as code:
+      cmu.config.ts  ->  /home/you/my-token/cmu.config.ts
+
+    They are require()d as code to read this project's configuration, run with
+    your full environment, and can do anything your user account can. This
+    command does not sign anything and does not unlock your session. ...
+```
+
+The files in `test/` are **not** listed, yet they run as code next — with your full environment and the devnet `PRIVATE_KEY` described under [Environment Injection](#environment-injection). A project with no `cmu.config.ts/js` shows no prompt at all. Review `test/` before running a suite you did not write. Tracked as [CointMU-CLI#183](https://github.com/Cointmu-ORG/CointMU-CLI/issues/183).
+:::
+
 ## Pre-Test Steps
 
 Before running any test file, the command performs the following steps automatically:
