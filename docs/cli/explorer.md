@@ -62,11 +62,11 @@ A network defined with an empty `url` — as the scaffolded `mainnet` entry ship
 
 ```bash
 error: explorer failed
-the resolved network has no url.
-hint: set `url` for this network in cmu.config.ts.
+network 'mainnet' has no url.
+hint: set networks.mainnet.url in cmu.config.ts.
 ```
 
-The hint names `cmu.config.ts` even in a project whose config is `cmu.config.js`. Tracked as [CointMU-CLI#186](https://github.com/Cointmu-ORG/CointMU-CLI/issues/186).
+The hint names the config file that was actually loaded, `cmu.config.ts` or `cmu.config.js`.
 
 ## Trust Model
 
@@ -170,6 +170,27 @@ Balance      : 0.0 (0 wei)
 | `Address`  | The address as you passed it.                                  |
 | `Bytecode` | The deployed code size in bytes, or a note that there is none. |
 | `Balance`  | The balance in CMU, with the raw wei value in parentheses.     |
+
+### Recorded Contracts
+
+When the project has a [deployment record](/docs/cli/deploy#deployment-records) on this network for the address, two lines are added per record:
+
+```bash
+--- Address on 'local' ---
+Address      : 0x0e7f183193856290E9B5C294AdEAc9974Eb7ea70
+Bytecode     : 3548 bytes
+Balance      : 0.0 (0 wei)
+Recorded as  : StandardERC20 (deployments/local/StandardERC20.json, recorded 2026-10-14T03:15:09.000Z)
+Record check : code matches the record
+```
+
+| `Record check`                                       | Meaning                                                    |
+| ---------------------------------------------------- | ---------------------------------------------------------- |
+| `code matches the record`                            | The code at the address hashes to the recorded `codeHash`. |
+| `code differs from the record - the record is stale` | Another contract is at that address now.                   |
+| `no code at the address - the record is stale`       | Nothing is deployed there, e.g. after a DevNet restart.    |
+
+The explorer only labels: a stale record is reported, not refused, and the command still exits `0`. Records that are malformed or for another network are skipped silently. To use a recorded contract, see [`getDeployed` in `cmu console`](/docs/cli/console#loading-a-deployed-contract), which refuses stale records.
 
 An address holding no code is a **result, not a failure** — the command reports it and exits `0`:
 

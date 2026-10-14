@@ -30,7 +30,15 @@ There are two places a key can live:
 | `.cmu-session`             | The current project          | `use`                                            |
 | `~/.cmu-wallets.json`      | Every project on the machine | `save`, `create --save`                          |
 
-Commands that sign — `cmu deploy`, `cmu console`, `cmu wallet transfer` — only ever read `.cmu-session`. A saved wallet is used by running `cmu wallet use <name>` in a project, which copies it into that project's session.
+A saved wallet is never signed with directly. It is used by running `cmu wallet use <name>` in a project, which copies it into that project's session. Where each signing command takes its key from:
+
+| Command               | Key sources, first match wins                                                |
+| --------------------- | ---------------------------------------------------------------------------- |
+| `cmu deploy`          | `wallet.privateKey` in `cmu.config`, then `PRIVATE_KEY`, then `.cmu-session` |
+| `cmu console`         | The same as `cmu deploy`                                                     |
+| `cmu wallet transfer` | `.cmu-session` only                                                          |
+
+See [Resolving the Signing Key](/docs/cli/deploy#resolving-the-signing-key).
 
 ::: info
 Every subcommand that prompts — `create --save`, `save`, `use`, `delete` without `--yes`, and `transfer` — refuses in a non-interactive session rather than hanging on a prompt nobody can answer:
@@ -41,7 +49,16 @@ cannot prompt for a private key in a non-interactive session.
 hint: run this in a terminal.
 ```
 
-In CI, set `PRIVATE_KEY` instead; see [Resolving the Signing Key](/docs/cli/deploy#resolving-the-signing-key).
+For `cmu deploy` and `cmu console` in CI, set `PRIVATE_KEY` instead; see [Resolving the Signing Key](/docs/cli/deploy#resolving-the-signing-key). `cmu wallet transfer` has no non-interactive form.
+
+Pressing `Ctrl+C` at any of these prompts writes nothing. Only `transfer` says so (`aborted: nothing was sent.`); the others print inquirer's own message:
+
+```bash
+error: wallet save failed
+User force closed the prompt with SIGINT
+```
+
+Tracked as [CointMU-CLI#215](https://github.com/Cointmu-ORG/CointMU-CLI/issues/215).
 :::
 
 ---
@@ -143,7 +160,7 @@ Use instead:
 | Sign with a new key                 | `cmu wallet create --save <name>`, then `cmu wallet use <name>` |
 | Sign in CI                          | Set `PRIVATE_KEY`; see [Resolving the Signing Key](/docs/cli/deploy#resolving-the-signing-key) |
 
-A `.cmu-session` written by `login` before 1.6.0 keeps working with its password, because the file format did not change. If its key is not saved anywhere else, keep it with [`cmu wallet save <name> --session`](#saving-the-session-key) before running `cmu wallet use` in that project.
+A `.cmu-session` written by `login` in 1.3.2 or later keeps working with its password, because the file format did not change; one from 1.3.1 or older does not (see [Replacing a Session](#replacing-a-session)). If its key is not saved anywhere else, keep it with [`cmu wallet save <name> --session`](#saving-the-session-key) before running `cmu wallet use` in that project.
 :::
 
 ---
@@ -178,6 +195,18 @@ Balance : 9076.06 ETH
 ---------------------------
 ```
 
+Only the plaintext address in `.cmu-session` is read, so no password is asked for. An unreachable node fails with ethers' raw error, preceded by its `JsonRpcProvider failed to detect network ...` retry notice:
+
+```bash
+Connecting to local (http://127.0.0.1:8585)...
+JsonRpcProvider failed to detect network and cannot start up; retry in 1s (perhaps the URL is wrong or the node is not started)
+
+error: wallet balance failed
+connect ECONNREFUSED 127.0.0.1:8585
+```
+
+Tracked as [CointMU-CLI#214](https://github.com/Cointmu-ORG/CointMU-CLI/issues/214).
+
 ---
 
 ## cmu wallet info
@@ -193,6 +222,16 @@ cmu wallet info
 ### Requirements
 
 An active wallet session must exist. Run [`cmu wallet use <name>`](#cmu-wallet-use) first.
+
+The session's network must still be saved. If it was deleted — for example from another project, since the saved list is shared — `cmu wallet info` and `cmu wallet balance` fail:
+
+```bash
+error: wallet info failed
+network 'geth2' is not saved.
+hint: list saved networks with `cmu network list`, or add one with `cmu network save <url> --name <name>`.
+```
+
+Pick another with [`cmu network use <name>`](/docs/cli/network#cmu-network-use).
 
 ### Output
 
@@ -297,6 +336,17 @@ hint: run `cmu wallet use keep` in a project to make it active there.
 
 Use it to keep a key that exists only in a session — such as one written by `cmu wallet login` before 1.6.0 — before [replacing that session](#replacing-a-session).
 
+| Cause                                               | Message                                             |
+| --------------------------------------------------- | --------------------------------------------------- |
+| The session's address is already a saved wallet     | `this session's key is already saved as '<name>'.`  |
+| No `.cmu-session` here, or one without a usable key | `this project's .cmu-session holds no key to save.` |
+
+The name is checked first, under the same rules as without `--session`.
+
+::: warning
+A session written by cmu 1.3.1 or older uses an earlier encryption format, and `--session` reports it as holding no key even though it does. See [Replacing a Session](#replacing-a-session).
+:::
+
 ---
 
 ## cmu wallet use
@@ -354,7 +404,7 @@ error: wallet use failed
 aborted: .cmu-session was not changed; it still holds 0x70997970C51812dc3A010C7d01b50e0d17dc79C8.
 ```
 
-In a non-interactive session the question cannot be asked, so the command refuses. There is no flag to skip it:
+In a non-interactive session the question cannot be asked, so the command refuses. There is no flag to skip it. The three warning lines above are still printed first, then:
 
 ```bash
 error: wallet use failed
@@ -395,7 +445,7 @@ cmu wallet list
 
 ### Output
 
-The wallet the current project's session holds is marked with `[*]`:
+Saved wallets whose address matches the current project's session are marked with `[*]`. The same key saved under two names marks both:
 
 ```bash
 
@@ -568,9 +618,12 @@ warning: 0x... is a contract - plain ETH can be rejected or locked by it.
 
 ### Confirmation
 
-After the password is accepted, the transfer is summarized and — unless `--yes` is passed — confirmed, defaulting to **no**:
+After the password is accepted, the transfer is summarized and — unless `--yes` is passed — confirmed, defaulting to **no**. The two connection lines come from the node check in step 3 and print before the password prompt:
 
 ```bash
+Pinging http://127.0.0.1:8585...
+Connected to 'local' (chain ID 1912).
+
 --- Transfer ---
 Network : local (chain ID 1912)
 From    : 0x90F79bf6EB2c4f870365E785982E1f101E93b906 (.cmu-session, saved as 'alice')
@@ -614,13 +667,20 @@ Two exit-`1` failures happen after the transaction left the CLI:
 Exit `2` is kept separate from `1` so a script cannot mistake an unconfirmed transfer for a failed one and send it twice:
 
 ```bash
-warning: transaction 0x... was sent but is not in a block after 120s.
-hint: blocks only appear while something mines - `cmu mine start`, then check `cmu wallet balance` before sending again.
+warning: transaction 0x3ab892210083d062ec6fd4060e491081aaa9fdd9d453e2fcb8db21022ca85217 was sent but is not in a block after 120s.
+hint: blocks only appear while this node mines - `cmu mine status` shows whether it does and where its rewards go. `cmu mine start` would move the node's etherbase to your wallet for everyone. Either way, check `cmu wallet balance` before sending again.
 ```
 
-::: info
-The local DevNet started by [`cmu node start`](/docs/cli/node) mines a block for every transaction, so a transfer there confirms immediately. The `cmu mine start` hint does not apply to it — `cmu mine` does not work against the DevNet. Tracked as [CointMU-CLI#184](https://github.com/Cointmu-ORG/CointMU-CLI/issues/184).
-:::
+The hint depends on what the node reports for `eth_mining`, asked with a 3-second limit:
+
+| Node                               | Hint                                                                                                                                                                                                                                  |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No `eth_mining` — the local DevNet | `` the local DevNet puts each transaction in a block at once, so a missing confirmation means the node stopped or dropped it - check it is still running (`cmu node start`), then check `cmu wallet balance` before sending again. `` |
+| Mining                             | `` this node is mining, but the first block after a start can take minutes while ethash builds its DAG - wait a little (`cmu mine status` shows progress), then check `cmu wallet balance` before sending again. ``                   |
+| Not mining                         | The `blocks only appear while this node mines` hint above.                                                                                                                                                                            |
+| No answer                          | `` the node did not answer a follow-up check - make sure it is still reachable, then check `cmu wallet balance` before sending again. ``                                                                                              |
+
+When the confirmation could not be checked at all, rather than timing out, the warning reads `transaction 0x... was sent, but its confirmation could not be checked (...)`. Exit code `2` and the hint are the same.
 
 A wrong session password stops the transfer with the session error shown under [Session File](#session-file):
 
@@ -636,20 +696,32 @@ hint: check the password. To start a fresh session, run `cmu wallet use <name>`.
 
 A project has one `.cmu-session`, and [`cmu wallet use`](#cmu-wallet-use) is the only command that writes a key into it.
 
-| The current session's key is…  | `cmu wallet use <name>`                                                 |
-| ------------------------------ | ----------------------------------------------------------------------- |
-| A saved wallet                 | Replaced without asking — the key is still in `~/.cmu-wallets.json`.    |
-| Not a saved wallet             | Asks first, defaulting to no; refuses without a terminal. Since 1.5.2.  |
+| The current session's key is…          | `cmu wallet use <name>`                                                |
+| -------------------------------------- | ---------------------------------------------------------------------- |
+| A saved wallet                         | Replaced without asking — the key is still in `~/.cmu-wallets.json`.   |
+| Not a saved wallet                     | Asks first, defaulting to no; refuses without a terminal. Since 1.5.2. |
+| Unreadable, or from cmu 1.3.1 or older | **Replaced without asking** — see the warning below.                   |
 
 ::: danger REPLACING AN UNSAVED KEY DELETES IT
 If you answer yes, a key that exists nowhere else — such as one written by `cmu wallet login` or `cmu wallet create --login` before 1.6.0 — is gone, along with any funds sent to it. Keep it first with [`cmu wallet save <name> --session`](#saving-the-session-key).
+:::
+
+::: danger SESSIONS REPLACED WITHOUT ASKING
+`cmu wallet use` only asks when it can read the old session and open its key format. It replaces these without asking, even though the key in them can still be recovered with its password:
+
+- A session written by **cmu 1.3.1 or older**, which used AES-256-CBC and has no `authTag` field. `cmu wallet save <name> --session` cannot keep it either.
+- A session whose JSON **does not parse**, such as one with a stray comma from a hand edit. The encrypted key is still in the file.
+
+Before running `cmu wallet use` in a project that may hold such a session, copy `.cmu-session` somewhere safe. Tracked as [CointMU-CLI#209](https://github.com/Cointmu-ORG/CointMU-CLI/issues/209).
 :::
 
 ---
 
 ## Session File
 
-`cmu wallet use` writes a `.cmu-session` file to the current working directory. This file is required by several other `cmu` commands including `cmu mine`, `cmu network`, `cmu wallet balance`, and `cmu wallet transfer`. A `.cmu-session` written by `cmu wallet login` before 1.6.0 has the same format and keeps working.
+`cmu wallet use` writes a `.cmu-session` file to the current working directory. It is required by `cmu wallet balance`, `cmu wallet info`, `cmu wallet transfer`, `cmu mine`, and by `cmu network use`, `cmu network info` and `cmu network ping` without a name. All of them except `transfer` read only the plaintext `address` and `activeNetwork`, and never ask for the password.
+
+A `.cmu-session` written by `cmu wallet login` in 1.3.2 through 1.5.x has the same format and keeps working. One written by 1.3.1 or older uses an earlier format that 1.6.0 cannot open.
 
 | Field           | Description                                                        |
 | --------------- | ------------------------------------------------------------------ |
@@ -681,9 +753,9 @@ Invalid session password, or .cmu-session is from an older version or has been t
 hint: check the password. To start a fresh session, run `cmu wallet use <name>`.
 ```
 
-### Use by `cmu deploy`
+### Use by `cmu deploy` and `cmu console`
 
-When `PRIVATE_KEY` is not set in the environment, [`cmu deploy`](/docs/cli/deploy) falls back to this session: it prompts once for the password, decrypts the key, and caches it in memory for the rest of that CLI process. Dry runs (`--config`, `--ping`) never trigger the prompt.
+When neither `wallet.privateKey` in `cmu.config` nor `PRIVATE_KEY` yields a key, [`cmu deploy`](/docs/cli/deploy) and [`cmu console`](/docs/cli/console) fall back to this session: they prompt once for the password, decrypt the key, and cache it in memory for the rest of that CLI process. Dry runs (`--config`, `--ping`) and `cmu console --no-signer` never trigger the prompt.
 
 ::: warning
 `.cmu-session` contains encrypted key material. Do not commit this file to version control. Projects scaffolded with `cmu create` already list it in the generated `.gitignore`.
