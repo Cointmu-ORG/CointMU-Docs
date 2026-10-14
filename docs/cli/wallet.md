@@ -253,7 +253,6 @@ Saves a private key as a named wallet in `~/.cmu-wallets.json`, encrypted with a
 
 ```bash
 cmu wallet save <name>
-cmu wallet add <name>
 cmu wallet save <name> --session
 ```
 
@@ -521,7 +520,7 @@ Sends ETH from the session wallet to an address, on the session's active network
 
 ```bash
 cmu wallet transfer <to> <amount>
-cmu wallet tf <to> <amount> --yes
+cmu wallet transfer <to> <amount> --yes
 ```
 
 ### Arguments
