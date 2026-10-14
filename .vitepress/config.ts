@@ -39,6 +39,7 @@ export default defineConfig({
         items: [
           { text: "Overview", link: "/docs/cli/overview" },
           { text: "Installation", link: "/docs/cli/installation" },
+          { text: "Changelog", link: "/docs/cli/changelog" },
           { text: "cmu create", link: "/docs/cli/create" },
           { text: "cmu compile", link: "/docs/cli/compile" },
           { text: "cmu deploy", link: "/docs/cli/deploy" },
