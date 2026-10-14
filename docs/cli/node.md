@@ -41,7 +41,7 @@ cmu node connect [options]
 
 The command performs the following steps in order:
 
-1. Resolves the RPC endpoint from the specified or active network configuration.
+1. Resolves the RPC endpoint from the saved networks: the one named with `-n`, else the session's active network, else `local`. `cmu.config.ts` is not read; see [Which Network a Command Uses](/docs/cli/network#which-network-a-command-uses).
 2. Opens a JSON-RPC provider with the resolved endpoint.
 3. Fetches the connected network metadata.
 4. Fetches the latest block number.
@@ -60,14 +60,12 @@ hint: start a local node with `cmu node start`, or check the endpoint with `cmu 
 ```bash
 Pinging http://127.0.0.1:8585...
 Connected to the CointMU node.
-Network      : unknown
+Network      : local
 Chain ID     : 1912
-Block number : 5686
+Block number : 3
 ```
 
-::: info
-`Network` reports the name **ethers** resolves for the chain ID, not the name the endpoint is saved under. ethers has no registered name for chain `1912`, so this field reads `unknown` against a CointMU node even when the connection is healthy. Use `Chain ID` to confirm you reached the right chain, and [`cmu network info`](/docs/cli/network) to see the saved name. Other commands print the saved name instead; tracked as [CointMU-CLI#187](https://github.com/Cointmu-ORG/CointMU-CLI/issues/187).
-:::
+`Network` is the name the endpoint is saved under. Two saved networks can share a chain ID, so use `Chain ID` to confirm you reached the right chain.
 
 ---
 

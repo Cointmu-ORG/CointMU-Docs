@@ -76,10 +76,10 @@ When a `.ts` config file is detected, the command loads it using `ts-node` in tr
 
 **Default values when no config is provided:**
 
-| Setting           | Default                                     |
-| ----------------- | ------------------------------------------- |
-| `evmVersion`      | `paris`                                     |
-| `outputSelection` | ABI + `evm.bytecode.object` always emitted. |
+| Setting           | Default                                                                                                                  |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `evmVersion`      | `paris`                                                                                                                  |
+| `outputSelection` | ABI, `evm.bytecode.object`, `evm.deployedBytecode.object` and `evm.deployedBytecode.immutableReferences` always emitted. |
 
 If the config file cannot be loaded, the command prints a warning and continues with defaults:
 
@@ -123,12 +123,14 @@ Imports that resolve outside the project root or `node_modules` boundary are rej
 
 Each generated artifact is written as a formatted JSON file containing the compiled contract output from `solc`:
 
-| Field                 | Description                                    |
-| --------------------- | ---------------------------------------------- |
-| `abi`                 | Interface definition for contract interaction. |
-| `evm.bytecode.object` | Compiled contract binary for deployment.       |
+| Field                                      | Description                                              |
+| ------------------------------------------ | -------------------------------------------------------- |
+| `abi`                                      | Interface definition for contract interaction.           |
+| `evm.bytecode.object`                      | Compiled contract binary for deployment.                 |
+| `evm.deployedBytecode.object`              | Runtime bytecode, as it sits on-chain after deployment.  |
+| `evm.deployedBytecode.immutableReferences` | Byte ranges the constructor fills with immutable values. |
 
-These artifacts are consumed by deployment scripts and other build-time tooling in the pipeline.
+These artifacts are consumed by deployment scripts and other build-time tooling in the pipeline. The two `deployedBytecode` fields, added in 1.5.1, are what [`getDeployed`](/docs/cli/console#loading-a-deployed-contract) checks on-chain code against; artifacts compiled by an older `cmu` lack them, so run `cmu compile` again.
 
 ## Output
 

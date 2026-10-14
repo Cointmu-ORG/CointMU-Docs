@@ -64,6 +64,14 @@ warning: the following project files will be executed as code:
 ? Execute these files? (y/N)
 ```
 
+With `--no-signer` the listed files are the same, but the wording is the read-only one `cmu compile` and `cmu explorer` use, since no key is decrypted:
+
+```bash
+    They are require()d as code to read this project's configuration, run with
+    your full environment, and can do anything your user account can. This
+    command does not sign anything and does not unlock your session. ...
+```
+
 The prompt defaults to **no**, `-y, --yes` skips it, and a non-interactive session without `--yes` refuses rather than continuing. The full rules are on [the `cmu deploy` page](/docs/cli/deploy#trust-model).
 
 ::: warning
@@ -83,7 +91,7 @@ Network      : local
 RPC endpoint : http://127.0.0.1:8585
 Chain ID     : 1912
 Signer       : 0x9A201a7Bf68758C43187c3fB0c2280dCfedF3f98
-Preloaded    : provider, signer, ethers, getContract(name, address)
+Preloaded    : provider, signer, ethers, getContract(name, address), getDeployed(name)
 -----------------------------
 
 cmu>
@@ -105,6 +113,7 @@ hint: check the node is running and the endpoint is correct - `cmu network list`
 | `signer`                     | `ethers.Wallet` \| `undefined` | Connected to `provider` when a key was resolved.               |
 | `ethers`                     | module                         | The same ethers version the CLI bundles.                       |
 | `getContract(name, address)` | function                       | Loads a compiled ABI and binds it to an address.               |
+| `getDeployed(name)`          | async function                 | Loads a contract `cmu deploy` recorded on this network.        |
 
 The provider is created with `staticNetwork`, so the chain is detected once and then pinned — every call you type costs one request instead of two.
 
@@ -118,8 +127,8 @@ Top-level `await` works at the prompt, so `await provider.getBlockNumber()` is e
 
 | Priority | Source                              | Prompts?                                  |
 | -------- | ----------------------------------- | ----------------------------------------- |
-| 1        | `PRIVATE_KEY` environment variable  | No. Read from `.env` or the ambient env.  |
-| 2        | `wallet.privateKey` in `cmu.config` | No.                                       |
+| 1        | `wallet.privateKey` in `cmu.config` | No.                                       |
+| 2        | `PRIVATE_KEY` environment variable  | No. Read from `.env` or the ambient env.  |
 | 3        | Encrypted `.cmu-session`            | Yes — asks once for the session password. |
 
 A missing key is **not** an error. The console still opens, `signer` is `undefined`, and `getContract()` falls back to the provider:
@@ -166,7 +175,7 @@ cmu> ethers.formatEther(await token.totalSupply())
 ```
 
 ::: info
-The address is required because nothing in a project records deployed addresses per network. `deployments/<Contract>.json` is written by the scaffolded deploy script, but it is one file per contract rather than per chain, and a hand-written script may not write it at all — so resolving an address from it could silently point the console at a contract on the wrong chain.
+`getContract` never looks an address up. For a contract deployed with `cmu deploy`, use [`getDeployed`](#loading-a-deployed-contract) instead.
 :::
 
 ### getContract Errors
@@ -189,6 +198,44 @@ hint: expected a 0x-prefixed 20-byte address.
 ::: tip
 `getContract` validates the address itself rather than handing it to ethers. An unvalidated non-address string would be treated as a possible ENS name and resolved over the network, surfacing the typo as an unrelated connection error.
 :::
+
+## Loading a Deployed Contract
+
+```js
+await getDeployed(name);
+```
+
+`getDeployed` returns the same contract `getContract` would, at the address [`cmu deploy` recorded](/docs/cli/deploy#deployment-records) for `name` on the console's network, in `deployments/<network>/<name>.json`. It is async, so always `await` it. Each successful call prints where the address came from:
+
+```bash
+cmu> const token = await getDeployed("StandardERC20")
+getDeployed: StandardERC20 -> 0x0e7f183193856290E9B5C294AdEAc9974Eb7ea70 on 'local' (chain 1912), recorded 2026-10-14T03:15:09.000Z from deployments/local/StandardERC20.json
+cmu> await token.name()
+'MyToken'
+```
+
+Before handing the contract back, the record is checked against the chain, so a stale or foreign record fails instead of pointing the console at the wrong contract:
+
+| Check                                            | Message on failure                                                                                                           |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `name` is a contract name                        | `'<name>' is not a contract name.`                                                                                           |
+| A record exists for this network                 | `no deployment record for '<name>' on '<network>' (deployments/<network>/<name>.json).`                                      |
+| The record is well-formed and names this network | `deployments/<network>/<name>.json is not a usable deployment record.`                                                       |
+| The chain ID matches the record                  | `the record for <name> on '<network>' is for chain <id>, but '<network>' is chain <id>.`                                     |
+| There is code at the address                     | `the record for <name> on '<network>' is stale: there is no contract at 0x... (was the devnet restarted?).`                  |
+| The code is the code that was recorded           | `the record for <name> on '<network>' is stale: the code at 0x... is not the code that was recorded.`                        |
+| The code matches `artifacts/<name>.json`         | `<name> at 0x...: the compiled artifact no longer matches the deployed code (did the source change since the last deploy?).` |
+
+A local DevNet is fresh every time it starts, so after a restart its records are stale:
+
+```bash
+cmu> await getDeployed("StandardERC20")
+Uncaught:
+Error: the record for StandardERC20 on 'local' is stale: there is no contract at 0x0e7f183193856290E9B5C294AdEAc9974Eb7ea70 (was the devnet restarted?).
+hint: run `cmu deploy` again.
+```
+
+The last check compares against the runtime bytecode in the artifact, ignoring immutables, so it needs artifacts from `cmu compile` 1.5.1 or later; run `cmu compile` if it reports `artifacts/<name>.json has no deployed bytecode to check the contract against.` Contracts that link libraries cannot be checked and are refused. A flat `deployments/<name>.json` written by older scaffolds is never read; when one exists, the "no deployment record" hint says so.
 
 ## Ending the Session
 

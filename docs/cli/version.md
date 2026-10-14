@@ -25,9 +25,9 @@ The command reads version metadata from the CLI's own `package.json` and the bui
 
 ```bash
 cmu
-version      : 1.4.0
-codename     : Orion
-build        : eebb31e
+version      : 1.6.0
+codename     : Cirrus
+build        : d1937c5
 architecture : x64
 node         : v24.19.0
 solidity     : 0.8.37+commit.f401782d.Emscripten.clang

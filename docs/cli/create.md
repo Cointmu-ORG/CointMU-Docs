@@ -66,6 +66,64 @@ All values are validated against their respective allowed values before project 
 | `vault`       | Multisig timelock treasury project.                                                            |
 | `kyberion`    | Post-quantum cryptography research prototype.                                                  |
 
+## Generated Files
+
+A TypeScript `erc20` project, for example:
+
+```bash
+my-token/
+├── .env.example
+├── .gitignore
+├── artifacts/.gitkeep
+├── cmu.config.ts
+├── contracts/StandardERC20.sol
+├── deploy/01_standarderc20.ts
+├── deployments/.gitkeep
+├── package.json
+├── scripts/.gitkeep
+├── test/Template.test.ts
+└── tsconfig.json
+```
+
+A JavaScript project has `cmu.config.js`, a `.js` deploy script and test, and no `tsconfig.json`.
+
+`deployments/` is where [`cmu deploy` records](/docs/cli/deploy#deployment-records) each deployed contract, as `deployments/<network>/<Contract>.json`. The scaffolded deploy script does not write any address file itself.
+
+The generated `.gitignore`:
+
+```bash
+# Dependency directories
+node_modules/
+
+# Coverage output
+coverage/
+
+# Environment files
+.env
+.env.local
+.env.test
+.env.production
+
+# CointMU local session & network state (encrypted key / local-only config)
+.cmu-session
+.cmu-networks.json
+.cmu-wallets.json
+
+# Compiled artifacts
+artifacts/
+dist/
+
+# Local devnet deployment records (other networks' records are meant to be committed)
+deployments/local/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+```
+
+`.cmu-networks.json` and `.cmu-wallets.json` live in your home directory, not the project; they are listed so a copy can never be committed by accident. Only `deployments/local/` is ignored: records for shared networks are meant to be committed, so everyone on the project resolves the same addresses.
+
 ## Dependency Installation
 
 After the files are written, `cmu create` runs `npm install` inside the new project directory and installs its baseline dependencies:

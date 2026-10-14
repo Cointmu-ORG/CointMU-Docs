@@ -25,6 +25,30 @@ Running `cmu network` with no subcommand lists the saved networks, exactly as `c
 `-v, --verbose` is a global flag declared on `cmu` itself, so it works anywhere on the line — `cmu -v network list`, `cmu network -v list` and `cmu network list -v` are equivalent.
 :::
 
+## Which Network a Command Uses
+
+There are two independent ways a command picks its network. The saved networks managed on this page, with the active one recorded in the project's `.cmu-session`, are one. The `networks` and `defaultNetwork` of the project's `cmu.config.ts/js` are the other.
+
+| Command                                                        | Network comes from                                          | `-n` names                      |
+| -------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------- |
+| `cmu wallet balance`, `cmu wallet info`, `cmu wallet transfer` | The session's `activeNetwork`                               | —                               |
+| `cmu mine start`, `cmu mine stop`, `cmu mine status`           | The session's `activeNetwork`                               | —                               |
+| `cmu network info`, `cmu network ping`                         | The session's `activeNetwork`, or the name passed to `ping` | —                               |
+| `cmu node connect`                                             | `-n`, else the session's `activeNetwork`, else `local`      | A saved network                 |
+| `cmu deploy`, `cmu console`, `cmu explorer`                    | `-n`, else `defaultNetwork` in `cmu.config.ts/js`           | A network in `cmu.config.ts/js` |
+
+`cmu network use` therefore has no effect on `cmu deploy`, `cmu console` or `cmu explorer`, and `defaultNetwork` has no effect on `cmu wallet` or `cmu mine`. To deploy to a server and mine on it, point both at it: set `defaultNetwork` (or pass `-n`) in the config, and run `cmu network use <name>`.
+
+The same `-n` flag means different things. With a saved network called `geth` that `cmu.config.ts` does not define, `cmu node connect -n geth` connects, while `cmu deploy -n geth` fails:
+
+```bash
+error: deploy failed
+network 'geth' is not defined in cmu.config.js.
+hint: add it under `networks`, or pick one that is already defined.
+```
+
+Outside a project, with no `cmu.config.ts/js`, `cmu deploy`, `cmu console` and `cmu explorer` target `http://127.0.0.1:8585` (chain ID `1912`) directly. They do not read the saved `local` entry, so re-saving `local` with another URL does not move them.
+
 ---
 
 ## cmu network save
@@ -60,6 +84,17 @@ error: network save failed
 invalid RPC endpoint 'ftp://node.example'.
 hint: pass a full http:// or https:// URL, e.g. `cmu network save http://127.0.0.1:8585 --name local`.
 ```
+
+| Endpoint                               | Result                                    |
+| -------------------------------------- | ----------------------------------------- |
+| `http://127.0.0.1:8585`                | Accepted.                                 |
+| `https://user:pw@node.example/rpc?k=1` | Accepted, credentials and query included. |
+| `localhost:8545`                       | Rejected — no scheme.                     |
+| `http://`                              | Rejected — no host.                       |
+| `http://bad host`                      | Rejected.                                 |
+| `ftp://node.example`                   | Rejected — only `http:` and `https:`.     |
+
+The endpoint is not contacted when saving, so an unreachable node is accepted. The name is not validated either: any string works, including spaces and `/`.
 
 Saving does not change the active network. Use `cmu network use` to switch to it afterwards.
 
@@ -132,7 +167,9 @@ hint: list saved networks with `cmu network list`, or add one with `cmu network 
 
 ### Behavior
 
-The command rewrites the `activeNetwork` field inside `.cmu-session` in the current working directory. All commands that resolve a network from the session — including `cmu wallet balance`, `cmu mine start`, and `cmu network ping` — use the new selection immediately.
+The command rewrites the `activeNetwork` field inside `.cmu-session` in the current working directory and leaves the rest of the session untouched. Every command that reads the session's network — see [Which Network a Command Uses](#which-network-a-command-uses) — uses the new selection immediately.
+
+Because the selection lives in the session, a project needs a session before it can pick a network: run `cmu wallet use <name>` first, then `cmu network use <network>`. The name is checked before the session, so an unknown name is reported even in a project without one.
 
 ### Output
 
@@ -167,6 +204,17 @@ hint: switch away first with `cmu network use <name>`.
 ```
 
 Switch to a different network with `cmu network use` before deleting. Deleting a name that was never saved exits with `network '<name>' is not saved.`
+
+Only the session in the **current** directory is checked. The saved list is shared by every project on the machine, so deleting a network from one project can remove the network another project's session still points at. That project's commands then fail until it picks another one:
+
+| Command in the other project                        | Message                                       |
+| --------------------------------------------------- | --------------------------------------------- |
+| `cmu network info`, `cmu network ping`              | `active network '<name>' is no longer saved.` |
+| `cmu wallet info`, `cmu wallet balance`, `cmu mine` | `network '<name>' is not saved.`              |
+
+::: warning
+In a directory without a session, nothing counts as active for `delete`, so `cmu network delete local` succeeds — even though `cmu network list` marks `local` as active there. `local` is not re-created afterwards, and every fallback to it then fails, including the network a later `cmu wallet use` records. Restore it with `cmu network save http://127.0.0.1:8585 --name local`. Tracked as [CointMU-CLI#212](https://github.com/Cointmu-ORG/CointMU-CLI/issues/212).
+:::
 
 ### Output
 
@@ -241,7 +289,17 @@ Latency      : 12ms
 -------------------
 ```
 
-The command exits with code `1` if the endpoint is unreachable.
+The command exits with code `1` if the endpoint is unreachable. The error is ethers' own, preceded by its retry notice:
+
+```bash
+Pinging geth (http://127.0.0.1:18546)...
+JsonRpcProvider failed to detect network and cannot start up; retry in 1s (perhaps the URL is wrong or the node is not started)
+
+error: network ping failed
+connect ECONNREFUSED 127.0.0.1:18546
+```
+
+An endpoint that does not answer at all fails with `request timeout (code=TIMEOUT, version=6.17.0)` instead. Tracked as [CointMU-CLI#214](https://github.com/Cointmu-ORG/CointMU-CLI/issues/214).
 
 ---
 
@@ -295,7 +353,20 @@ Saved networks are kept in `.cmu-networks.json` as an array of entries:
 | `name`   | The identifier used by `use` and `delete`.     |
 | `rpcUrl` | The JSON-RPC endpoint of the network.          |
 
-On first read the file is seeded with a single entry, `local` pointing at `http://127.0.0.1:8585`.
+On first read the file is seeded with a single entry, `local` pointing at `http://127.0.0.1:8585`. It is only seeded when the file does not exist, so a deleted `local` stays deleted.
+
+```json
+[
+  {
+    "name": "local",
+    "rpcUrl": "http://127.0.0.1:8585"
+  }
+]
+```
+
+::: warning
+The file is written with your default permissions — `0644` under the usual umask — so other users on the machine can read it. Unlike `~/.cmu-wallets.json` and `.cmu-session`, which are `0600`. Avoid saving endpoints that embed credentials, or restrict the file yourself with `chmod 600 ~/.cmu-networks.json`; saves keep the mode of an existing file. Tracked as [CointMU-CLI#213](https://github.com/Cointmu-ORG/CointMU-CLI/issues/213).
+:::
 
 ::: info
 `.cmu-networks.json` is stored in your **home directory**, not in the project. The saved network list is therefore shared by every CointMU project on the machine. The active network *selection* is not shared — it lives in each project's own `.cmu-session` file.

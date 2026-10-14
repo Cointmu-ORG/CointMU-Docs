@@ -41,31 +41,35 @@ If the `test/` directory does not exist, the command exits with an error before 
 
 ## Executing Project Code
 
-`cmu test` compiles first, and the compile loads `cmu.config.ts/js` as code. The CLI lists the file and asks for confirmation before it runs. Pass `-y, --yes` to skip the prompt; in a non-interactive session the command refuses rather than continuing. See [the trust model](/docs/cli/deploy#trust-model).
-
-::: warning
-The prompt comes from the compile step, so it describes the compile, not the test run:
+Before anything is compiled, `cmu test` lists every project file it is about to execute as code: `cmu.config.ts/js` and the test files mocha will run. Those are every `.ts` file under `test/` (recursively) when there is at least one, otherwise every `.js` file. It then asks for confirmation:
 
 ```bash
 warning: the following project files will be executed as code:
       cmu.config.ts  ->  /home/you/my-token/cmu.config.ts
+      Template.test.ts  ->  /home/you/my-token/test/Template.test.ts
 
-    They are require()d as code to read this project's configuration, run with
-    your full environment, and can do anything your user account can. This
-    command does not sign anything and does not unlock your session. ...
+    They run with your full environment, including anything set in .env or your
+    shell, and can do anything your user account can. The test files also get a
+    PRIVATE_KEY for a devnet account derived from the devnet mnemonic. This is
+    the same trust model as Hardhat, Foundry and Truffle; see the 'Trust Model'
+    section of the README.
+
+? Execute these files? (y/N)
 ```
 
-The files in `test/` are **not** listed, yet they run as code next — with your full environment and the devnet `PRIVATE_KEY` described under [Environment Injection](#environment-injection). A project with no `cmu.config.ts/js` shows no prompt at all. Review `test/` before running a suite you did not write. Tracked as [CointMU-CLI#183](https://github.com/Cointmu-ORG/CointMU-CLI/issues/183).
-:::
+The prompt defaults to **no**. `-y, --yes` skips it; in a non-interactive session the command refuses rather than continuing. You are asked once: the compile that follows does not ask again. See [the trust model](/docs/cli/deploy#trust-model).
+
+The `PRIVATE_KEY` the test files get is the one described under [Environment Injection](#environment-injection), for the ephemeral DevNet, not your session key.
 
 ## Pre-Test Steps
 
 Before running any test file, the command performs the following steps automatically:
 
 1. **Check the runtime** — refuses immediately on Node older than 22.
-2. **Compile** — triggers `cmu compile` to ensure all contract artifacts are up to date.
-3. **Start ephemeral DevNet** — starts an in-process Hardhat 3 network and fronts it with a local JSON-RPC proxy on port `8555` with Chain ID `1912`.
-4. **Inject environment** — passes network credentials to the test process via environment variables.
+2. **Confirm trust** — lists `cmu.config.ts/js` and the test files, and asks once. See [Executing Project Code](#executing-project-code).
+3. **Compile** — triggers `cmu compile` to ensure all contract artifacts are up to date.
+4. **Start ephemeral DevNet** — starts an in-process Hardhat 3 network and fronts it with a local JSON-RPC proxy on port `8555` with Chain ID `1912`.
+5. **Inject environment** — passes network credentials to the test process via environment variables.
 
 ## Ephemeral DevNet
 
