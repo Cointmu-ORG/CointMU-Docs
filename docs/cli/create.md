@@ -87,6 +87,37 @@ my-token/
 
 A JavaScript project has `cmu.config.js`, a `.js` deploy script and test, and no `tsconfig.json`.
 
+The generated `cmu.config.ts` (`cmu.config.js` uses `module.exports =` instead of `export default`):
+
+```ts
+export default {
+  defaultNetwork: "local",
+  networks: {
+    local: {
+      url: "http://127.0.0.1:8585",
+      chainId: 1912,
+      symbol: "CMU",
+    },
+    // Set this to your own CointMU mainnet RPC endpoint before deploying.
+    // Keep it on https://: a plaintext http:// endpoint can be intercepted and
+    // made to return spoofed chain state (balances, nonces, gas, receipts).
+    mainnet: {
+      url: "",
+      chainId: 1912,
+      symbol: "CMU",
+    },
+  },
+  wallet: {
+    privateKey: process.env.PRIVATE_KEY,
+  },
+  compiler: {
+    version: "0.8.20",
+  },
+};
+```
+
+`symbol` is new in 1.7.0. [`cmu explorer`](/docs/cli/explorer#coin-symbol) labels balances with it, and a network without it shows `ETH`, so a project created by an older `cmu` needs `symbol: "CMU"` added by hand. `mainnet` ships with an empty `url`; set it before deploying there.
+
 `deployments/` is where [`cmu deploy` records](/docs/cli/deploy#deployment-records) each deployed contract, as `deployments/<network>/<Contract>.json`. The scaffolded deploy script does not write any address file itself.
 
 The generated `.gitignore`:

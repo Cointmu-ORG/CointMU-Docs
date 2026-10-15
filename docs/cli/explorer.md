@@ -68,6 +68,36 @@ hint: set networks.mainnet.url in cmu.config.ts.
 
 The hint names the config file that was actually loaded, `cmu.config.ts` or `cmu.config.js`.
 
+### Coin Symbol
+
+Since 1.7.0 the [address lookup](#looking-up-an-address) labels the balance with a coin symbol, taken from the same place as the network. Before 1.7.0 the balance had no unit.
+
+| Network resolved from                            | Symbol                                   |
+| ------------------------------------------------ | ---------------------------------------- |
+| `networks.<name>.symbol` in `cmu.config.ts/js`   | That symbol: 1-11 letters or digits.     |
+| A network in `cmu.config.ts/js` without `symbol` | `ETH`                                    |
+| No `cmu.config.ts/js` (the local devnet)         | `CMU`                                    |
+
+Projects created by `cmu create` 1.7.0 or later have `symbol: "CMU"` on both scaffolded networks (see [Generated Files](/docs/cli/create#generated-files)). An older project shows `ETH` until you add the key:
+
+```ts
+networks: {
+  local: {
+    url: "http://127.0.0.1:8585",
+    chainId: 1912,
+    symbol: "CMU",
+  },
+},
+```
+
+The symbol in `~/.cmu-networks.json` set by [`cmu network save --symbol`](/docs/cli/network#coin-symbol) is not read here. An invalid `symbol` fails before any connection, like a missing `url`. Because `cmu deploy` and `cmu console` resolve the network the same way, they refuse it too:
+
+```bash
+error: explorer failed
+network 'local' has an invalid symbol "C-M" - expected 1-11 letters or digits, e.g. CMU.
+hint: fix networks.local.symbol in cmu.config.js, or remove it to use ETH.
+```
+
 ## Trust Model
 
 Resolving the network means `require()`ing `cmu.config.ts/js` from the working directory, which is arbitrary project code. The explorer therefore passes through the same confirmation gate as the other commands that read the config, listing it before it runs:
@@ -162,14 +192,14 @@ cmu explorer --contract 0x43862ad4C579a04B0D6F6d057Da16Ac317b9454F
 --- Address on 'local' ---
 Address      : 0x43862ad4C579a04B0D6F6d057Da16Ac317b9454F
 Bytecode     : 3548 bytes
-Balance      : 0.0 (0 wei)
+Balance      : 0.0 CMU (0 wei)
 ```
 
-| Field      | Description                                                    |
-| ---------- | -------------------------------------------------------------- |
-| `Address`  | The address as you passed it.                                  |
-| `Bytecode` | The deployed code size in bytes, or a note that there is none. |
-| `Balance`  | The balance in CMU, with the raw wei value in parentheses.     |
+| Field      | Description                                                                                       |
+| ---------- | ------------------------------------------------------------------------------------------------- |
+| `Address`  | The address as you passed it.                                                                     |
+| `Bytecode` | The deployed code size in bytes, or a note that there is none.                                    |
+| `Balance`  | The balance with the network's [coin symbol](#coin-symbol), and the raw wei value in parentheses. |
 
 ### Recorded Contracts
 
@@ -179,7 +209,7 @@ When the project has a [deployment record](/docs/cli/deploy#deployment-records) 
 --- Address on 'local' ---
 Address      : 0x0e7f183193856290E9B5C294AdEAc9974Eb7ea70
 Bytecode     : 3548 bytes
-Balance      : 0.0 (0 wei)
+Balance      : 0.0 CMU (0 wei)
 Recorded as  : StandardERC20 (deployments/local/StandardERC20.json, recorded 2026-10-14T03:15:09.000Z)
 Record check : code matches the record
 ```
@@ -198,7 +228,7 @@ An address holding no code is a **result, not a failure** — the command report
 --- Address on 'local' ---
 Address      : 0x9A201a7Bf68758C43187c3fB0c2280dCfedF3f98
 Bytecode     : none - not a contract (an ordinary account, or an unused address)
-Balance      : 100.0 (100000000000000000000 wei)
+Balance      : 100.0 CMU (100000000000000000000 wei)
 ```
 
 ::: tip

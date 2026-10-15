@@ -21,7 +21,7 @@ cmu wallet <subcommand> [options]
 | `cmu wallet use <name>`              | Make a saved wallet the active session in this project.        |
 | `cmu wallet list`                    | List saved wallets.                                            |
 | `cmu wallet delete <name>`           | Delete a saved wallet.                                         |
-| `cmu wallet transfer <to> <amount>`  | Send ETH from the session wallet. Alias: `tf`.                 |
+| `cmu wallet transfer <to> <amount>`  | Send the network's native coin from the session wallet. Alias: `tf`. |
 
 There are two places a key can live:
 
@@ -191,9 +191,11 @@ hint: run `cmu wallet use <name>` first, or `cmu wallet create --save <name>` an
 Connecting to local (http://127.0.0.1:8585)...
 ---------------------------
 Address : 0x...
-Balance : 9076.06 ETH
+Balance : 100.0 CMU
 ---------------------------
 ```
+
+Since 1.7.0 the balance is labelled with the active network's [coin symbol](/docs/cli/network#coin-symbol). A network saved without one, including a `local` saved by an older `cmu`, still shows `ETH`; `cmu network save http://127.0.0.1:8585 --name local --symbol CMU` changes that.
 
 Only the plaintext address in `.cmu-session` is read, so no password is asked for. An unreachable node fails with ethers' raw error, preceded by its `JsonRpcProvider failed to detect network ...` retry notice:
 
@@ -514,7 +516,7 @@ The second line only appears when the current project's session holds the delete
 
 ## cmu wallet transfer
 
-Sends ETH from the session wallet to an address, on the session's active network.
+Sends the network's native coin from the session wallet to an address, on the session's active network. Since 1.7.0 every amount it prints is labelled with that network's [coin symbol](/docs/cli/network#coin-symbol) — `CMU` in the examples below — or `ETH` for a network saved without one.
 
 ### Usage
 
@@ -528,7 +530,7 @@ cmu wallet transfer <to> <amount> --yes
 | Argument   | Description                                              |
 | ---------- | -------------------------------------------------------- |
 | `<to>`     | The recipient: a `0x`-prefixed, 40-digit hex address.    |
-| `<amount>` | The amount in ETH, as a plain decimal such as `0.5`.     |
+| `<amount>` | The amount in the network's coin, as a plain decimal such as `0.5`. |
 
 ### Options
 
@@ -584,9 +586,16 @@ Both arguments are checked before the command connects to anything.
 
 ```bash
 error: wallet transfer failed
-invalid amount ".5" - expected a positive decimal ETH value like 0.5.
+invalid amount ".5" - expected a positive decimal amount like 0.5.
 hint: no sign, exponent, separators or bare leading/trailing dot: write 1 or 0.5.
 ```
+
+```bash
+error: wallet transfer failed
+amount '1.0000000000000000001' has more than 18 decimals - the smallest unit (1 wei) is 0.000000000000000001.
+```
+
+The amount is checked before the network is looked up, so since 1.7.0 these two messages name no coin. Before 1.7.0 they said `ETH`.
 
 ### Pre-Send Checks
 
@@ -602,9 +611,9 @@ Everything that can be checked is checked **before** the password prompt, in thi
 
 | Failure                     | Message                                                                                     |
 | --------------------------- | ------------------------------------------------------------------------------------------- |
-| Balance below the amount    | `insufficient balance: 100.0 ETH, the transfer needs 1000.0 ETH plus fee.`                  |
-| Balance below amount + fee  | `balance ... ETH covers the amount but not the max fee (... ETH).`                          |
-| Recipient rejects plain ETH | `0x... would reject this transfer - the node could not estimate it (...).`                  |
+| Balance below the amount    | `insufficient balance: 100.0 CMU, the transfer needs 1000.0 CMU plus fee.`                  |
+| Balance below amount + fee  | `balance 100.0 CMU covers the amount but not the max fee (0.000063003 CMU).`                |
+| Recipient rejects the coin  | `0x... would reject this transfer - the node could not estimate it (...).`, with the hint `a contract without a payable receive() or fallback() cannot take plain CMU.` |
 | Zero address with `--yes`   | `--yes does not cover sending to the zero address.`                                         |
 
 These conditions warn but do not stop the transfer:
@@ -612,7 +621,7 @@ These conditions warn but do not stop the transfer:
 ```bash
 warning: funds sent to the zero address are burned and cannot be recovered.
 warning: 0x90F79bf6EB2c4f870365E785982E1f101E93b906 is the sending wallet - this only spends the fee.
-warning: 0x... is a contract - plain ETH can be rejected or locked by it.
+warning: 0x... is a contract - plain CMU can be rejected or locked by it.
 ```
 
 ### Confirmation
@@ -627,8 +636,8 @@ Connected to 'local' (chain ID 1912).
 Network : local (chain ID 1912)
 From    : 0x90F79bf6EB2c4f870365E785982E1f101E93b906 (.cmu-session, saved as 'alice')
 To      : 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
-Amount  : 1.5 ETH (1500000000000000000 wei)
-Max fee : 0.000063003 ETH
+Amount  : 1.5 CMU (1500000000000000000 wei)
+Max fee : 0.000063003 CMU
 ----------------
 ? Send this transaction? (y/N)
 ```
@@ -642,7 +651,7 @@ Tx hash : 0x48ee9e16c3872f958117e9f65d78d680e6ffae0b6b2a166fc2664008158c8878
 Waiting for 1 confirmation (up to 120s)...
 ---------------------------
 Block   : 1
-Balance : 98.499960625 ETH
+Balance : 98.499960625 CMU
 ---------------------------
 ```
 

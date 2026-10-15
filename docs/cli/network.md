@@ -12,7 +12,7 @@ cmu network <subcommand> [options]
 
 | Subcommand                          | Description                                        |
 | ----------------------------------- | -------------------------------------------------- |
-| `cmu network save <url> --name <n>` | Save a new network or update an existing one.      |
+| `cmu network save <url> --name <n>` | Save a new network or update an existing one. `--symbol` sets its [coin symbol](#coin-symbol). |
 | `cmu network list`                  | List all saved networks.                           |
 | `cmu network use <name>`            | Switch the active network.                         |
 | `cmu network delete <name>`         | Delete a saved network.                            |
@@ -37,7 +37,7 @@ There are two independent ways a command picks its network. The saved networks m
 | `cmu node connect`                                             | `-n`, else the session's `activeNetwork`, else `local`      | A saved network                 |
 | `cmu deploy`, `cmu console`, `cmu explorer`                    | `-n`, else `defaultNetwork` in `cmu.config.ts/js`           | A network in `cmu.config.ts/js` |
 
-`cmu network use` therefore has no effect on `cmu deploy`, `cmu console` or `cmu explorer`, and `defaultNetwork` has no effect on `cmu wallet` or `cmu mine`. To deploy to a server and mine on it, point both at it: set `defaultNetwork` (or pass `-n`) in the config, and run `cmu network use <name>`.
+`cmu network use` therefore has no effect on `cmu deploy`, `cmu console` or `cmu explorer`, and `defaultNetwork` has no effect on `cmu wallet` or `cmu mine`. The [coin symbol](#coin-symbol) that amounts are labelled with comes from the same place as the network. To deploy to a server and mine on it, point both at it: set `defaultNetwork` (or pass `-n`) in the config, and run `cmu network use <name>`.
 
 The same `-n` flag means different things. With a saved network called `geth` that `cmu.config.ts` does not define, `cmu node connect -n geth` connects, while `cmu deploy -n geth` fails:
 
@@ -63,9 +63,10 @@ cmu network save http://10.64.24.248:8585 --name mainnet
 
 ### Options
 
-| Flag                | Description                            |
-| ------------------- | -------------------------------------- |
-| `-n, --name <name>` | Name to save the network under. Required. |
+| Flag                | Description                                                                                                                                                |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-n, --name <name>` | Name to save the network under. Required.                                                                                                                  |
+| `--symbol <symbol>` | Coin symbol that amounts on this network are labelled with: 1-11 letters or digits, stored as typed. No short form. Since 1.7.0. See [Coin Symbol](#coin-symbol). |
 
 ### Behavior
 
@@ -103,6 +104,57 @@ Saving does not change the active network. Use `cmu network use` to switch to it
 ```bash
 Saved network 'mainnet' (http://10.64.24.248:8585)
 ```
+
+Since 1.7.0 the line also names the coin symbol: the one passed with `--symbol`, or the one an update kept. A network without a symbol prints the line above, unchanged.
+
+```bash
+Saved network 'kampus' (http://127.0.0.1:8585, symbol tCMU)
+Saved network 'local' (http://127.0.0.1:8585, symbol CMU kept)
+```
+
+### Coin Symbol
+
+Since 1.7.0, each saved network can carry a coin symbol. [`cmu wallet balance`](/docs/cli/wallet#cmu-wallet-balance), [`cmu wallet transfer`](/docs/cli/wallet#cmu-wallet-transfer), [`cmu mine status`](/docs/cli/mine#cmu-mine-status), the [`cmu mine start --watch`](/docs/cli/mine#watching-progress) status line and [`cmu network info`](#cmu-network-info) label amounts with the symbol of the session's active network. Before 1.7.0 every amount said `ETH`.
+
+```bash
+cmu network save http://127.0.0.1:8585 --name kampus --symbol tCMU
+```
+
+| Saved network                                       | Amounts are labelled                 |
+| --------------------------------------------------- | ------------------------------------ |
+| Saved with `--symbol`                               | With that symbol, e.g. `100.0 CMU`.  |
+| Saved without one, or saved before 1.7.0            | `ETH`, as before.                    |
+| `local` in a `~/.cmu-networks.json` created by 1.7.0 | `CMU` — the file is seeded with it. |
+
+The symbol is only a label. Amounts are still read and written with 18 decimals, and `wei` values are unchanged.
+
+- The symbol is stored exactly as typed, so `tCMU` stays `tCMU` and `cmu` is not uppercased.
+- Saving an existing network again without `--symbol` keeps its symbol, and the output says `kept`.
+- A symbol cannot be removed with `--symbol`. Edit `~/.cmu-networks.json` and delete the `symbol` key to go back to `ETH`.
+
+`--symbol` is checked before anything is written. Anything other than 1-11 ASCII letters or digits is refused, and the file is left untouched:
+
+```bash
+error: network save failed
+invalid symbol 'C-M' - expected 1-11 letters or digits, e.g. CMU.
+hint: e.g. `cmu network save http://127.0.0.1:8585 --name bad --symbol CMU`.
+```
+
+::: tip Labelling an existing local network CMU
+1.7.0 does not migrate existing files. A `local` entry saved by an older `cmu` keeps showing `ETH` until you give it a symbol:
+
+```bash
+cmu network save http://127.0.0.1:8585 --name local --symbol CMU
+```
+
+```bash
+Saved network 'local' (http://127.0.0.1:8585, symbol CMU)
+```
+
+Use the URL already saved for `local` (see `cmu network list`), since `save` also overwrites the endpoint.
+:::
+
+`cmu deploy`, `cmu console` and `cmu explorer` do not read this file; they take the network, and its symbol, from `cmu.config.ts/js`. See [Coin Symbol in cmu explorer](/docs/cli/explorer#coin-symbol).
 
 ---
 
@@ -250,8 +302,11 @@ An active wallet session with a selected network must exist. Each way of not hav
 --- Active network ---
 Network      : local
 RPC endpoint : http://127.0.0.1:8585
+Symbol       : CMU
 ----------------------
 ```
+
+The `Symbol` line is new in 1.7.0. It shows the network's [coin symbol](#coin-symbol), or `ETH` for a network saved without one.
 
 ---
 
@@ -348,21 +403,35 @@ The delete flag is a **capital** `-D`. A lowercase `-d` is not registered and is
 
 Saved networks are kept in `.cmu-networks.json` as an array of entries:
 
-| Field    | Description                                    |
-| -------- | ---------------------------------------------- |
-| `name`   | The identifier used by `use` and `delete`.     |
-| `rpcUrl` | The JSON-RPC endpoint of the network.          |
+| Field    | Description                                                                                       |
+| -------- | ------------------------------------------------------------------------------------------------- |
+| `name`   | The identifier used by `use` and `delete`.                                                        |
+| `rpcUrl` | The JSON-RPC endpoint of the network.                                                             |
+| `symbol` | Optional. The [coin symbol](#coin-symbol) amounts are labelled with; `ETH` when absent. Since 1.7.0. |
 
-On first read the file is seeded with a single entry, `local` pointing at `http://127.0.0.1:8585`. It is only seeded when the file does not exist, so a deleted `local` stays deleted.
+On first read the file is seeded with a single entry, `local` pointing at `http://127.0.0.1:8585`. Since 1.7.0 the seeded entry has the symbol `CMU`. It is only seeded when the file does not exist, so a deleted `local` stays deleted, and a file created by an older `cmu` keeps its `local` without a symbol.
 
 ```json
 [
   {
     "name": "local",
-    "rpcUrl": "http://127.0.0.1:8585"
+    "rpcUrl": "http://127.0.0.1:8585",
+    "symbol": "CMU"
   }
 ]
 ```
+
+A network saved without `--symbol` is written with `name` and `rpcUrl` only, exactly as before 1.7.0.
+
+A `symbol` edited by hand into something other than 1-11 letters or digits stops the commands that print amounts, and the error names the command that fixes it:
+
+```bash
+error: wallet balance failed
+network 'local' has an invalid symbol "c m" in ~/.cmu-networks.json - expected 1-11 letters or digits, e.g. CMU.
+hint: set it again with `cmu network save http://127.0.0.1:8585 --name local --symbol <SYMBOL>`.
+```
+
+Re-saving that network without `--symbol` keeps the broken value and says so (`symbol "c m" kept`), so pass a new `--symbol`.
 
 ::: warning
 The file is written with your default permissions — `0644` under the usual umask — so other users on the machine can read it. Unlike `~/.cmu-wallets.json` and `.cmu-session`, which are `0600`. Avoid saving endpoints that embed credentials, or restrict the file yourself with `chmod 600 ~/.cmu-networks.json`; saves keep the mode of an existing file. Tracked as [CointMU-CLI#213](https://github.com/Cointmu-ORG/CointMU-CLI/issues/213).
