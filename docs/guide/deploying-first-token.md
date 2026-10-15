@@ -126,11 +126,13 @@ Then save the deployer key as a wallet, activate it in the project, and point th
 ```bash
 cmu wallet save deployer
 cmu wallet use deployer
-cmu network save http://10.64.24.248:8585 --name cointmu
+cmu network save http://10.64.24.248:8585 --name cointmu --symbol CMU
 cmu network use cointmu
 ```
 
 `cmu wallet save` prompts for the private key and a new password; `cmu wallet use` makes it the key `cmu deploy` signs with. See [cmu wallet](/docs/cli/wallet).
+
+`--symbol CMU` makes `cmu wallet balance`, `cmu wallet transfer` and `cmu mine` show amounts on this network in `CMU` instead of `ETH`. Since 1.7.0; see [Coin Symbol](/docs/cli/network#coin-symbol).
 
 ## 6. Start the Miner
 
