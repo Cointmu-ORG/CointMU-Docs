@@ -18,7 +18,7 @@ Every release of the CointMU CLI published to npm as [`cointmu-cli`](https://www
 
 | Version | Codename | Released   |
 | ------- | -------- | ---------- |
-| 1.6.0   | Cirrus   | 2026-10-13 |
+| 1.7.0   | Rainbow  | 2026-10-15 |
 
 Upgrade an existing install:
 
@@ -71,6 +71,19 @@ The network flags still work and print a deprecation warning naming the replacem
 | 1.3.7 | Node.js 20.12.0 or newer. `cmu node start` and `cmu test` need Node.js 22 or newer.             |
 | 1.3.5 | Node.js 20 or newer, checked at startup with a readable error instead of a failure mid-command. |
 | 1.3.1 | Node.js 18 or newer.                                                                            |
+
+## 1.7.0 — Rainbow {#v1-7-0}
+
+Released 2026-10-15.
+
+- **Added** a coin symbol per saved network: `cmu network save <url> --name <name> --symbol <SYMBOL>`, 1-11 letters or digits, stored as typed. Saving again without `--symbol` keeps it, and the output says `symbol <SYMBOL> kept`. See [Coin Symbol](/docs/cli/network#coin-symbol).
+- **Changed** `cmu wallet balance`, `cmu wallet transfer`, `cmu mine status` and the `cmu mine start --watch` status line label amounts with the active network's symbol instead of always `ETH`. `cmu network info` gains a `Symbol` line.
+- **Changed** a new `~/.cmu-networks.json` labels `local` as `CMU`. Existing files are not migrated: networks saved without a symbol, including an older `local`, still show `ETH`. Run `cmu network save http://127.0.0.1:8585 --name local --symbol CMU` to switch.
+- **Changed** `cmu explorer --contract` prints the balance with a unit: `networks.<name>.symbol` from `cmu.config`, `ETH` if unset, `CMU` without a config. Projects from `cmu create` get `symbol: "CMU"` on both networks. An invalid `symbol` in `cmu.config` stops `cmu explorer`, `cmu console` and `cmu deploy`, like a missing `url`. See [Coin Symbol in cmu explorer](/docs/cli/explorer#coin-symbol).
+- **Changed** `cmu node start` lists its accounts as `100 CMU each`.
+- **Changed** the `cmu wallet transfer` amount errors no longer name a coin, since the amount is checked before the network is known, and its help reads `Send the network's native coin from the session wallet`.
+
+The symbol is only a label: amounts keep 18 decimals and no value changes.
 
 ## 1.6.0 — Cirrus {#v1-6-0}
 
