@@ -109,7 +109,7 @@ The check runs before anything else, so a too-old runtime fails immediately rath
 On startup, the DevNet:
 
 - Validates the port, then binds to the specified host and port **before printing anything**.
-- Creates **10 pre-funded accounts** with **100 ETH each**, derived from the mnemonic at `m/44'/60'/0'/0/<index>`.
+- Creates **10 pre-funded accounts** with **100 CMU each**, derived from the mnemonic at `m/44'/60'/0'/0/<index>`. Before 1.7.0 the same balance was printed as `100 ETH`.
 - Uses Chain ID `1912` to match the CointMU network.
 - Prints the active mnemonic and every account to the console.
 - Shuts down gracefully on `SIGINT` (`Ctrl+C`).
@@ -159,7 +159,7 @@ Mnemonic: dress domain depart crystal desk jungle repair purpose chronic ride fl
 warning: development mnemonic - never use it on a live network.
 
 
-Pre-funded developer accounts (100 ETH each):
+Pre-funded developer accounts (100 CMU each):
 
 Account #0
 Address     : 0x9a47a51747bf54F233dFD031b0b7A6A4FF0F8F34

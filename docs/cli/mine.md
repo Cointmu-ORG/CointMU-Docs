@@ -165,6 +165,8 @@ block #36 mined by you.
 
 The status line shows the head block, the hashrate, how many blocks the session wallet mined since the watch started, and its balance with the change since then. The node is polled about every 4 seconds.
 
+Since 1.7.0 the balance is labelled with the session network's [coin symbol](/docs/cli/network#coin-symbol). The example shows `ETH` because its `geth` network was saved without `--symbol`. Saved with `--symbol CMU`, the same line reads `balance 1026.0 CMU (change +2.0)`.
+
 | Output       | Behavior                                                      |
 | ------------ | ------------------------------------------------------------- |
 | Terminal     | The status line is redrawn in place; events print above it.   |
@@ -265,7 +267,7 @@ Etherbase    : 0x70997970c51812dc3a010c7d01b50e0d17dc79c8 (not your session wall
 | `Latest block` | Number and age of the latest block. Ages are shown in `s`, `m` or `h`.                           |
 | `Difficulty`   | The latest block's difficulty.                                                                   |
 | `Wallet`       | The session address.                                                                             |
-| `Balance`      | The session wallet's balance at the latest block.                                                |
+| `Balance`      | The session wallet's balance at the latest block, labelled with the network's [coin symbol](/docs/cli/network#coin-symbol), or `ETH` when it has none. Since 1.7.0; before, always `ETH`. |
 
 Against the DevNet the miner fields read `n/a`:
 
@@ -278,9 +280,11 @@ Etherbase    : 0xc014ba5ec014ba5ec014ba5ec014ba5ec014ba5e (not your session wall
 Latest block : #0, 16s ago
 Difficulty   : 0
 Wallet       : 0xbc4671Dd2101BD2dC1334917eA18675f7fFC8dE2
-Balance      : 100.0 ETH
+Balance      : 100.0 CMU
 ---------------------
 ```
+
+`CMU` is the symbol of `local` in a `~/.cmu-networks.json` created by 1.7.0. A `local` saved by an older `cmu` shows `ETH` until it is [given a symbol](/docs/cli/network#coin-symbol).
 
 ::: warning
 The DevNet's `Etherbase` is a fixed placeholder address, not a reward recipient — the DevNet pays no block rewards. The `rewards go there` note is wrong there. Tracked as [CointMU-CLI#211](https://github.com/Cointmu-ORG/CointMU-CLI/issues/211), which also covers ages beyond hours being printed as large `h` values.

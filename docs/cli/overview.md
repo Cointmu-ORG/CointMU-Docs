@@ -13,7 +13,7 @@
 | `cmu explorer` | Query block and contract information over RPC.                        |
 | `cmu test`     | Run the contract test suite against an ephemeral local DevNet.        |
 | `cmu audit`    | Run dependency checks and Solidity static analysis.                   |
-| `cmu wallet`   | Save and switch encrypted wallets, check balances and send ETH.       |
+| `cmu wallet`   | Save and switch encrypted wallets, check balances and send coins.     |
 | `cmu network`  | Save, list, switch, and ping the RPC networks available to the CLI.   |
 | `cmu node`     | Test RPC connectivity or start a local development network.           |
 | `cmu mine`     | Start, stop and watch block mining on the active network's node.      |

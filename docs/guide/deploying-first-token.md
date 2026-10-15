@@ -114,20 +114,25 @@ In `cmu.config.ts`, give the scaffolded `mainnet` entry the server's URL — it 
     mainnet: {
       url: "http://10.64.24.248:8585",
       chainId: 1912,
+      symbol: "CMU",
     },
   },
 ```
+
+`symbol: "CMU"` is already there in projects created by `cmu create` 1.7.0 or later; in an older project, add it so [`cmu explorer`](/docs/cli/explorer#coin-symbol) labels balances `CMU` instead of `ETH`.
 
 Then save the deployer key as a wallet, activate it in the project, and point the session at the same server:
 
 ```bash
 cmu wallet save deployer
 cmu wallet use deployer
-cmu network save http://10.64.24.248:8585 --name cointmu
+cmu network save http://10.64.24.248:8585 --name cointmu --symbol CMU
 cmu network use cointmu
 ```
 
 `cmu wallet save` prompts for the private key and a new password; `cmu wallet use` makes it the key `cmu deploy` signs with. See [cmu wallet](/docs/cli/wallet).
+
+`--symbol CMU` makes `cmu wallet balance`, `cmu wallet transfer` and `cmu mine` show amounts on this network in `CMU` instead of `ETH`. Since 1.7.0; see [Coin Symbol](/docs/cli/network#coin-symbol).
 
 ## 6. Start the Miner
 
