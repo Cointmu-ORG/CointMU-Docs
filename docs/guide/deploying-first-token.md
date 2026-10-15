@@ -114,9 +114,12 @@ In `cmu.config.ts`, give the scaffolded `mainnet` entry the server's URL — it 
     mainnet: {
       url: "http://10.64.24.248:8585",
       chainId: 1912,
+      symbol: "CMU",
     },
   },
 ```
+
+`symbol: "CMU"` is already there in projects created by `cmu create` 1.7.0 or later; in an older project, add it so [`cmu explorer`](/docs/cli/explorer#coin-symbol) labels balances `CMU` instead of `ETH`.
 
 Then save the deployer key as a wallet, activate it in the project, and point the session at the same server:
 
