@@ -7,7 +7,7 @@ This guide walks through creating and deploying a basic ERC20 token on CointMU u
 | Requirement             | Details                                                                     |
 | ----------------------- | --------------------------------------------------------------------------- |
 | Running CointMU node    | Geth `1.10.26` running on Chain ID `1912`.                                  |
-| Nginx proxy             | Available at `http://10.64.24.248:8585`.                                    |
+| Nginx proxy             | Available at `http://10.64.24.101:8585`.                                    |
 | Funded deployer account | Its private key, and enough CMU for gas. `cmu` signs locally.               |
 | Active miner            | At least one miner running so transactions are included in blocks.          |
 | CointMU project         | A project scaffolded with `cmu create` or an existing compatible structure. |
@@ -70,7 +70,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 async function main() {
-  const rpcUrl = process.env.CMU_RPC_URL ?? "http://10.64.24.248:8585";
+  const rpcUrl = process.env.CMU_RPC_URL ?? "http://10.64.24.101:8585";
   const provider = new ethers.JsonRpcProvider(rpcUrl, 1912);
 
   const wallet = new ethers.Wallet(process.env.PRIVATE_KEY as string, provider);
@@ -112,7 +112,7 @@ In `cmu.config.ts`, give the scaffolded `mainnet` entry the server's URL — it 
   networks: {
     // ...
     mainnet: {
-      url: "http://10.64.24.248:8585",
+      url: "http://10.64.24.101:8585",
       chainId: 1912,
       symbol: "CMU",
     },
@@ -126,7 +126,7 @@ Then save the deployer key as a wallet, activate it in the project, and point th
 ```bash
 cmu wallet save deployer
 cmu wallet use deployer
-cmu network save http://10.64.24.248:8585 --name cointmu --symbol CMU
+cmu network save http://10.64.24.101:8585 --name cointmu --symbol CMU
 cmu network use cointmu
 ```
 
@@ -189,7 +189,7 @@ Compiled CMUS
 
 --- Deploy configuration ---
 Network      : mainnet
-RPC endpoint : http://10.64.24.248:8585
+RPC endpoint : http://10.64.24.101:8585
 Chain ID     : 1912
 Deployer     : 0x...
 ----------------------------
