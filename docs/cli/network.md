@@ -58,7 +58,7 @@ Saves a network to the local network store, or overwrites the RPC endpoint of an
 ### Usage
 
 ```bash
-cmu network save http://10.64.24.248:8585 --name mainnet
+cmu network save http://10.64.24.101:8585 --name mainnet
 ```
 
 ### Options
@@ -102,7 +102,7 @@ Saving does not change the active network. Use `cmu network use` to switch to it
 ### Output
 
 ```bash
-Saved network 'mainnet' (http://10.64.24.248:8585)
+Saved network 'mainnet' (http://10.64.24.101:8585)
 ```
 
 Since 1.7.0 the line also names the coin symbol: the one passed with `--symbol`, or the one an update kept. A network without a symbol prints the line above, unchanged.
@@ -178,7 +178,7 @@ Saved networks
 | Active | Name                 | RPC endpoint
 --------------------------------------------------------------------------
 | [*]    | local                | http://127.0.0.1:8585
-|        | mainnet              | http://10.64.24.248:8585
+|        | mainnet              | http://10.64.24.101:8585
 ==========================================================================
 
 ```

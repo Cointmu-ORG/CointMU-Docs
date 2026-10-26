@@ -106,7 +106,7 @@ server {
 | `10.x.x.x` network | Allowed — forwarded to Geth RPC. |
 | All other IPs      | Rejected at the proxy boundary.  |
 
-Clients inside the whitelisted network connect via `http://10.64.24.248:8585`. The raw Geth port `8545` remains inaccessible from outside the host.
+Clients inside the whitelisted network connect via `http://10.64.24.101:8585`. The raw Geth port `8545` remains inaccessible from outside the host.
 
 ## Operational Notes
 
