@@ -131,6 +131,14 @@ Top-level `await` works at the prompt, so `await provider.getBlockNumber()` is e
 | 2        | `PRIVATE_KEY` environment variable  | No. Read from `.env` or the ambient env.  |
 | 3        | Encrypted `.cmu-session`            | Yes — asks once for the session password. |
 
+Without a terminal the session password cannot be asked for. Since 1.7.1 the console then refuses to open, unless `--no-signer` is passed or a key comes from the first two sources:
+
+```bash
+error: console failed
+cannot prompt for the session password in a non-interactive session.
+hint: run this in a terminal, or set PRIVATE_KEY.
+```
+
 A missing key is **not** an error. The console still opens, `signer` is `undefined`, and `getContract()` falls back to the provider:
 
 ```bash

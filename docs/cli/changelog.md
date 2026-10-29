@@ -18,7 +18,7 @@ Every release of the CointMU CLI published to npm as [`cointmu-cli`](https://www
 
 | Version | Codename | Released   |
 | ------- | -------- | ---------- |
-| 1.7.0   | Rainbow  | 2026-10-15 |
+| 1.7.3   | Monsun   | 2026-10-19 |
 
 Upgrade an existing install:
 
@@ -60,9 +60,9 @@ This table is updated by hand with each release. To see what the registry holds 
 | Deprecated in | Feature                                                   | Replacement                                                      | Removal           |
 | ------------- | --------------------------------------------------------- | ---------------------------------------------------------------- | ----------------- |
 | 1.5.0         | `cmu wallet login`, `cmu wallet create --login`           | `cmu wallet save` + `cmu wallet use`, `cmu wallet create --save` | Removed in 1.6.0  |
-| 1.3.6         | `cmu network --save`, `--use`, `--list`, `--delete` flags | `cmu network save`, `use`, `list`, `delete` subcommands          | Planned for 2.0.0 |
+| 1.3.6         | `cmu network --save`, `--use`, `--list`, `--delete` flags | `cmu network save`, `use`, `list`, `delete` subcommands          | Not scheduled     |
 
-The network flags still work and print a deprecation warning naming the replacement. See [Deprecated Flags](/docs/cli/network#deprecated-flags).
+The network flags still work and print a deprecation warning naming the replacement. Until 1.7.1 the warning said they would be removed in 2.0.0; since [1.7.2](#v1-7-2) it names no removal release. See [Deprecated Flags](/docs/cli/network#deprecated-flags).
 
 ## Node.js Requirements
 
@@ -71,6 +71,37 @@ The network flags still work and print a deprecation warning naming the replacem
 | 1.3.7 | Node.js 20.12.0 or newer. `cmu node start` and `cmu test` need Node.js 22 or newer.             |
 | 1.3.5 | Node.js 20 or newer, checked at startup with a readable error instead of a failure mid-command. |
 | 1.3.1 | Node.js 18 or newer.                                                                            |
+
+## 1.7.3 — Monsun {#v1-7-3}
+
+Released 2026-10-19.
+
+- **Fixed** on Windows, `cmu create`, `cmu test`, `cmu deploy` with TypeScript scripts, `cmu audit` and `cmu update` failed with `spawn EINVAL` or `ENOENT`, because current Node.js refuses to start npm's `.cmd` shims without a shell. They now run npm's own `npm-cli.js` / `npx-cli.js` with the Node.js running `cmu`, still without a shell. **Not verified on Windows** for these docs; checked on Linux only.
+- **Fixed** `cmu audit` exits `1` with `npm could not be started: ...` when npm or npx cannot start, instead of printing both `reported issues` warnings, `Audit complete.` and exiting `0`. See [cmu audit](/docs/cli/audit#output).
+- **Fixed** `cmu update` says `npm could not be started: ...` with a hint when npm cannot start, instead of the bare spawn error.
+
+## 1.7.2 — Halo {#v1-7-2}
+
+Released 2026-10-18.
+
+- **Changed** `cmu network ping`, `cmu wallet balance` and `cmu mine start`, `stop` and `status` check the endpoint first, like `cmu deploy --ping`: they print `Pinging <url>...` and `Connected to '<name>' (chain ID <id>).`, and an unreachable node fails within 3 seconds with `RPC endpoint <url> is unreachable (timed out after 3000ms).` instead of ethers' retry notice and raw error. `cmu wallet balance` no longer prints `Connecting to <name> (<url>)...`.
+- **Changed** RPC URLs are masked wherever they are printed, errors and `-v` output included: the password, a lone username and every query value become `***`. A key in the URL path is not masked. See [Credentials in RPC URLs](/docs/cli/network#credentials-in-rpc-urls).
+- **Changed** `~/.cmu-networks.json` is written with `0600` permissions and replaced atomically. A file written `0644` by an older `cmu` is tightened on its next write.
+- **Changed** `cmu network delete local` is refused: `network 'local' is the built-in fallback and cannot be deleted.` `cmu wallet use` warns when it falls back to a `local` that is not saved.
+- **Changed** `cmu mine status` shows `Etherbase : n/a` on a node without the miner API, such as the DevNet, instead of its placeholder address marked `rewards go there`. Block ages over a day are shown in days (`d`).
+- **Changed** `Ctrl+C` or `Ctrl+D` at a prompt of `cmu wallet save`, `create --save`, `use` or `delete` exits with what was left alone, such as `aborted: nothing was saved.`, instead of inquirer's `User force closed the prompt with SIGINT`. See [cmu wallet](/docs/cli/wallet).
+- **Changed** the `cmu network --save`, `--use`, `--list` and `--delete` deprecation warning no longer says the flags will be removed in 2.0.0. No removal release is scheduled.
+- **Changed** `cmu version` and `cmu --version` take about 0.1 s instead of about 1 s: the solc and ethers versions are recorded at build time.
+- **Fixed** color codes follow `NO_COLOR` and `FORCE_COLOR`, and are no longer written to pipes and files. See [Color Output](/docs/cli/overview#color-output).
+
+## 1.7.1 — Lightning {#v1-7-1}
+
+Released 2026-10-15.
+
+- **Changed** `cmu wallet use` asks before replacing a `.cmu-session` it cannot open (written by cmu 1.3.1 or older) or parse, and on yes keeps a copy as `.cmu-session.bak-<time>`. Before, it replaced such a file without asking. `cmu wallet save --session` explains such a file instead of saying it holds no key. See [Sessions cmu Cannot Open](/docs/cli/wallet#sessions-cmu-cannot-open).
+- **Changed** projects from `cmu create` also ignore `.cmu-session.*.tmp` and `.cmu-session.bak-*`.
+- **Fixed** `cmu deploy` and `cmu console` exit `1` with `cannot prompt for the session password in a non-interactive session.` when they need the session password and stdin is not a terminal, instead of waiting forever.
+- **Fixed** `cmu mine start` and `cmu mine status` work on a geth node with no etherbase set; `status` shows `Etherbase : none set`. Before, both failed with a raw `could not coalesce error`.
 
 ## 1.7.0 — Rainbow {#v1-7-0}
 
@@ -211,6 +242,7 @@ Released 2026-09-15.
 - **Added** `cmu deploy`, `cmu compile` and `cmu test` list the project files they are about to execute and ask for confirmation. `-y, --yes` skips the prompt; without a terminal and without `--yes` they exit `1`.
 - **Added** `cmu network save`, `list`, `use` and `delete` subcommands.
 - **Deprecated** the `cmu network --save`, `--use`, `--list` and `--delete` flags. They print a warning and are planned for removal in 2.0.0.
+- Since [1.7.2](#v1-7-2) the warning names no removal release, and none is scheduled.
 - **Added** `cmu wallet create --login` generates a wallet straight into an encrypted session without printing the key or mnemonic. Removed in 1.6.0.
 - **Changed** `cmu network --save` only accepts `http://` and `https://` URLs.
 - **Changed** `cmu node start` warns before binding to a non-loopback `--host`.

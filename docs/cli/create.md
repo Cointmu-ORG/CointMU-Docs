@@ -137,6 +137,8 @@ coverage/
 
 # CointMU local session & network state (encrypted key / local-only config)
 .cmu-session
+.cmu-session.*.tmp
+.cmu-session.bak-*
 .cmu-networks.json
 .cmu-wallets.json
 
@@ -152,6 +154,8 @@ logs
 *.log
 npm-debug.log*
 ```
+
+`.cmu-session.*.tmp` is the temporary file an interrupted session write can leave behind, and `.cmu-session.bak-*` is the copy [`cmu wallet use`](/docs/cli/wallet#sessions-cmu-cannot-open) keeps before replacing a session it cannot open. Both hold an encrypted key and are listed since 1.7.1; add them to the `.gitignore` of a project created earlier.
 
 `.cmu-networks.json` and `.cmu-wallets.json` live in your home directory, not the project; they are listed so a copy can never be committed by accident. Only `deployments/local/` is ignored: records for shared networks are meant to be committed, so everyone on the project resolves the same addresses.
 

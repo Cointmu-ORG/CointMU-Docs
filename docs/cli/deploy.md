@@ -109,6 +109,14 @@ no private key available for signing.
 hint: run `cmu wallet use <name>`, or set PRIVATE_KEY in .env or cmu.config.ts.
 ```
 
+The session password can only be typed in a terminal. Since 1.7.1, when it would be needed and stdin is not a terminal — a pipe, CI — the command exits `1` instead of waiting forever:
+
+```bash
+error: deploy failed
+cannot prompt for the session password in a non-interactive session.
+hint: run this in a terminal, or set PRIVATE_KEY.
+```
+
 ::: info
 `--config` and `--ping` never trigger the session password prompt. A dry run reports the configuration it can resolve without unlocking anything.
 :::
