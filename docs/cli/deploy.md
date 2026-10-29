@@ -78,12 +78,12 @@ Silently bypassing the gate wherever stdin is not a TTY would make it meaningles
 
 ### Scope of the Confirmation
 
-| Invocation            | Files listed                                 |
-| --------------------- | -------------------------------------------- |
-| `cmu deploy`          | `cmu.config.*` and every script in `deploy/` |
-| `cmu deploy --config` | `cmu.config.*` only                          |
-| `cmu deploy --ping`   | `cmu.config.*` only                          |
-| `cmu compile`         | `cmu.config.*` only                          |
+| Invocation                      | Files listed                            |
+| ------------------------------- | --------------------------------------- |
+| `cmu deploy`                    | `cmu.config.*` and every script in `deploy/` |
+| `cmu deploy --config`           | `cmu.config.*` only                     |
+| `cmu deploy --ping`             | `cmu.config.*` only                     |
+| `cmu compile`                   | `cmu.config.*` only                     |
 
 `--config` and `--ping` exit before any deploy script runs, so only the project config is listed.
 

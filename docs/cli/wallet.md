@@ -12,16 +12,16 @@ cmu wallet <subcommand> [options]
 
 ## Subcommands
 
-| Subcommand                          | Description                                                          |
-| ----------------------------------- | -------------------------------------------------------------------- |
-| `cmu wallet create`                 | Generate a new EVM-compatible wallet.                                |
-| `cmu wallet balance`                | Show the native token balance of the active wallet.                  |
-| `cmu wallet info`                   | Show the active wallet session.                                      |
-| `cmu wallet save <name>`            | Save a private key as a named, encrypted wallet. Alias: `add`.       |
-| `cmu wallet use <name>`             | Make a saved wallet the active session in this project.              |
-| `cmu wallet list`                   | List saved wallets.                                                  |
-| `cmu wallet delete <name>`          | Delete a saved wallet.                                               |
-| `cmu wallet transfer <to> <amount>` | Send the network's native coin from the session wallet. Alias: `tf`. |
+| Subcommand                           | Description                                                    |
+| ------------------------------------ | -------------------------------------------------------------- |
+| `cmu wallet create`                  | Generate a new EVM-compatible wallet.                          |
+| `cmu wallet balance`                 | Show the native token balance of the active wallet.            |
+| `cmu wallet info`                    | Show the active wallet session.                                |
+| `cmu wallet save <name>`             | Save a private key as a named, encrypted wallet. Alias: `add`. |
+| `cmu wallet use <name>`              | Make a saved wallet the active session in this project.        |
+| `cmu wallet list`                    | List saved wallets.                                            |
+| `cmu wallet delete <name>`           | Delete a saved wallet.                                         |
+| `cmu wallet transfer <to> <amount>`  | Send the network's native coin from the session wallet. Alias: `tf`. |
 
 There are two places a key can live:
 
@@ -83,8 +83,8 @@ cmu wallet create --save <name>
 
 ### Options
 
-| Flag            | Description                                                                                                         |
-| --------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Flag            | Description                                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------------------------ |
 | `--save <name>` | Encrypt the new key into `~/.cmu-wallets.json` under `<name>` and print only the address and mnemonic. Since 1.5.0. |
 
 ### Default Behavior
@@ -161,11 +161,11 @@ removed; use wallet save + wallet use (or wallet create --save)
 
 Use instead:
 
-| You want to                      | Run                                                                                            |
-| -------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Sign with a key you already have | `cmu wallet save <name>`, then `cmu wallet use <name>`                                         |
-| Sign with a new key              | `cmu wallet create --save <name>`, then `cmu wallet use <name>`                                |
-| Sign in CI                       | Set `PRIVATE_KEY`; see [Resolving the Signing Key](/docs/cli/deploy#resolving-the-signing-key) |
+| You want to                         | Run                                                          |
+| ----------------------------------- | ------------------------------------------------------------ |
+| Sign with a key you already have    | `cmu wallet save <name>`, then `cmu wallet use <name>`       |
+| Sign with a new key                 | `cmu wallet create --save <name>`, then `cmu wallet use <name>` |
+| Sign in CI                          | Set `PRIVATE_KEY`; see [Resolving the Signing Key](/docs/cli/deploy#resolving-the-signing-key) |
 
 A `.cmu-session` written by `login` in 1.3.2 or later keeps working with its password, because the file format did not change; one from 1.3.1 or older does not (see [Replacing a Session](#replacing-a-session)). If its key is not saved anywhere else, keep it with [`cmu wallet save <name> --session`](#saving-the-session-key) before running `cmu wallet use` in that project.
 :::
@@ -274,8 +274,8 @@ cmu wallet save <name> --session
 
 ### Options
 
-| Flag        | Description                                                                                                                                     |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Flag        | Description                                                                                          |
+| ----------- | ---------------------------------------------------------------------------------------------------- |
 | `--session` | Save the key in this project's `.cmu-session` instead of prompting for one. Since 1.5.2. See [Saving the Session Key](#saving-the-session-key). |
 
 ### Behavior
@@ -298,11 +298,11 @@ hint: run `cmu wallet delete alice` first to replace it.
 
 The command then prompts for:
 
-| Prompt           | Description                                                                                                              |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Prompt           | Description                                                                                   |
+| ---------------- | --------------------------------------------------------------------------------------------- |
 | Private key      | Masked. An unusable key is rejected at the prompt with `invalid private key - expected a 32-byte hex key (0x-prefixed).` |
-| Wallet password  | Must satisfy the [password policy](#password-policy).                                                                    |
-| Confirm password | Must match. A mismatch saves nothing: `passwords do not match.`                                                          |
+| Wallet password  | Must satisfy the [password policy](#password-policy).                                         |
+| Confirm password | Must match. A mismatch saves nothing: `passwords do not match.`                               |
 
 The password is asked twice because a typo here cannot be caught later — decrypting with the same mistyped password succeeds, and the real one would never open the wallet.
 
@@ -572,9 +572,9 @@ cmu wallet transfer <to> <amount> --yes
 
 ### Arguments
 
-| Argument   | Description                                                         |
-| ---------- | ------------------------------------------------------------------- |
-| `<to>`     | The recipient: a `0x`-prefixed, 40-digit hex address.               |
+| Argument   | Description                                              |
+| ---------- | -------------------------------------------------------- |
+| `<to>`     | The recipient: a `0x`-prefixed, 40-digit hex address.    |
 | `<amount>` | The amount in the network's coin, as a plain decimal such as `0.5`. |
 
 ### Options
@@ -654,12 +654,12 @@ Everything that can be checked is checked **before** the password prompt, in thi
 6. The balance covers the amount plus the maximum fee.
 7. `--yes` is not being used to send to the zero address.
 
-| Failure                    | Message                                                                                                                                                                 |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Balance below the amount   | `insufficient balance: 100.0 CMU, the transfer needs 1000.0 CMU plus fee.`                                                                                              |
-| Balance below amount + fee | `balance 100.0 CMU covers the amount but not the max fee (0.000063003 CMU).`                                                                                            |
-| Recipient rejects the coin | `0x... would reject this transfer - the node could not estimate it (...).`, with the hint `a contract without a payable receive() or fallback() cannot take plain CMU.` |
-| Zero address with `--yes`  | `--yes does not cover sending to the zero address.`                                                                                                                     |
+| Failure                     | Message                                                                                     |
+| --------------------------- | ------------------------------------------------------------------------------------------- |
+| Balance below the amount    | `insufficient balance: 100.0 CMU, the transfer needs 1000.0 CMU plus fee.`                  |
+| Balance below amount + fee  | `balance 100.0 CMU covers the amount but not the max fee (0.000063003 CMU).`                |
+| Recipient rejects the coin  | `0x... would reject this transfer - the node could not estimate it (...).`, with the hint `a contract without a payable receive() or fallback() cannot take plain CMU.` |
+| Zero address with `--yes`   | `--yes does not cover sending to the zero address.`                                         |
 
 These conditions warn but do not stop the transfer:
 

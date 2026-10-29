@@ -10,14 +10,14 @@ cmu network <subcommand> [options]
 
 ## Subcommands
 
-| Subcommand                          | Description                                                                                    |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Subcommand                          | Description                                        |
+| ----------------------------------- | -------------------------------------------------- |
 | `cmu network save <url> --name <n>` | Save a new network or update an existing one. `--symbol` sets its [coin symbol](#coin-symbol). |
-| `cmu network list`                  | List all saved networks.                                                                       |
-| `cmu network use <name>`            | Switch the active network.                                                                     |
-| `cmu network delete <name>`         | Delete a saved network.                                                                        |
-| `cmu network info`                  | Show the active network.                                                                       |
-| `cmu network ping [name]`           | Ping a network to check connectivity and latency.                                              |
+| `cmu network list`                  | List all saved networks.                           |
+| `cmu network use <name>`            | Switch the active network.                         |
+| `cmu network delete <name>`         | Delete a saved network.                            |
+| `cmu network info`                  | Show the active network.                           |
+| `cmu network ping [name]`           | Ping a network to check connectivity and latency.  |
 
 Running `cmu network` with no subcommand lists the saved networks, exactly as `cmu network list` does.
 
@@ -63,9 +63,9 @@ cmu network save http://10.64.24.101:8585 --name mainnet
 
 ### Options
 
-| Flag                | Description                                                                                                                                                       |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `-n, --name <name>` | Name to save the network under. Required.                                                                                                                         |
+| Flag                | Description                                                                                                                                                |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-n, --name <name>` | Name to save the network under. Required.                                                                                                                  |
 | `--symbol <symbol>` | Coin symbol that amounts on this network are labelled with: 1-11 letters or digits, stored as typed. No short form. Since 1.7.0. See [Coin Symbol](#coin-symbol). |
 
 ### Behavior
@@ -120,10 +120,10 @@ Since 1.7.0, each saved network can carry a coin symbol. [`cmu wallet balance`](
 cmu network save http://127.0.0.1:8585 --name kampus --symbol tCMU
 ```
 
-| Saved network                                        | Amounts are labelled                |
-| ---------------------------------------------------- | ----------------------------------- |
-| Saved with `--symbol`                                | With that symbol, e.g. `100.0 CMU`. |
-| Saved without one, or saved before 1.7.0             | `ETH`, as before.                   |
+| Saved network                                       | Amounts are labelled                 |
+| --------------------------------------------------- | ------------------------------------ |
+| Saved with `--symbol`                               | With that symbol, e.g. `100.0 CMU`.  |
+| Saved without one, or saved before 1.7.0            | `ETH`, as before.                    |
 | `local` in a `~/.cmu-networks.json` created by 1.7.0 | `CMU` — the file is seeded with it. |
 
 The symbol is only a label. Amounts are still read and written with 18 decimals, and `wei` values are unchanged.
@@ -412,10 +412,10 @@ The delete flag is a **capital** `-D`. A lowercase `-d` is not registered and is
 
 Saved networks are kept in `.cmu-networks.json` as an array of entries:
 
-| Field    | Description                                                                                          |
-| -------- | ---------------------------------------------------------------------------------------------------- |
-| `name`   | The identifier used by `use` and `delete`.                                                           |
-| `rpcUrl` | The JSON-RPC endpoint of the network.                                                                |
+| Field    | Description                                                                                       |
+| -------- | ------------------------------------------------------------------------------------------------- |
+| `name`   | The identifier used by `use` and `delete`.                                                        |
+| `rpcUrl` | The JSON-RPC endpoint of the network.                                                             |
 | `symbol` | Optional. The [coin symbol](#coin-symbol) amounts are labelled with; `ETH` when absent. Since 1.7.0. |
 
 On first read the file is seeded with a single entry, `local` pointing at `http://127.0.0.1:8585`. Since 1.7.0 the seeded entry has the symbol `CMU`. It is only seeded when the file does not exist, so a file created by an older `cmu` keeps its `local` without a symbol, and a `local` removed by hand, or deleted by 1.7.1 or older, is not re-created. `cmu network delete local` is refused since 1.7.2.

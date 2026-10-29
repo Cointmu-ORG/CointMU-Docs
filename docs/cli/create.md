@@ -24,10 +24,10 @@ If validation fails, the command exits before any files are generated.
 
 ## Options
 
-| Flag                        | Description                                   | Allowed Values                                                                                         |
-| --------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Flag                        | Description                                   | Allowed Values                                                                                          |
+| --------------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `-t, --template <template>` | Select the scaffold template to generate.     | `blank`, `erc20`, `erc721`, `erc1155`, `dao`, `marketplace`, `staking`, `airdrop`, `vault`, `kyberion` |
-| `-l, --language <language>` | Select the project language for the scaffold. | `typescript`, `javascript`                                                                             |
+| `-l, --language <language>` | Select the project language for the scaffold. | `typescript`, `javascript`                                                                              |
 
 `-v, --verbose` is available globally; see [Global Options](/docs/cli/overview#global-options).
 
@@ -163,11 +163,11 @@ npm-debug.log*
 
 After the files are written, `cmu create` runs `npm install` inside the new project directory and installs its baseline dependencies:
 
-| Dependency set | Packages                                                                                 |
-| -------------- | ---------------------------------------------------------------------------------------- |
-| Runtime        | `ethers`                                                                                 |
+| Dependency set | Packages                                                            |
+| -------------- | ------------------------------------------------------------------- |
+| Runtime        | `ethers`                                                            |
 | TypeScript dev | `@types/node`, `mocha`, `chai`, `@types/mocha`, `@types/chai`, `ts-node`, `typescript@5` |
-| JavaScript dev | `mocha`, `chai`                                                                          |
+| JavaScript dev | `mocha`, `chai`                                                     |
 
 Installer output is streamed directly to the terminal, so the command takes noticeably longer than file generation alone.
 
