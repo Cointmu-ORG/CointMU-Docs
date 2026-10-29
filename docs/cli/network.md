@@ -10,14 +10,14 @@ cmu network <subcommand> [options]
 
 ## Subcommands
 
-| Subcommand                          | Description                                        |
-| ----------------------------------- | -------------------------------------------------- |
+| Subcommand                          | Description                                                                                    |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------- |
 | `cmu network save <url> --name <n>` | Save a new network or update an existing one. `--symbol` sets its [coin symbol](#coin-symbol). |
-| `cmu network list`                  | List all saved networks.                           |
-| `cmu network use <name>`            | Switch the active network.                         |
-| `cmu network delete <name>`         | Delete a saved network.                            |
-| `cmu network info`                  | Show the active network.                           |
-| `cmu network ping [name]`           | Ping a network to check connectivity and latency.  |
+| `cmu network list`                  | List all saved networks.                                                                       |
+| `cmu network use <name>`            | Switch the active network.                                                                     |
+| `cmu network delete <name>`         | Delete a saved network.                                                                        |
+| `cmu network info`                  | Show the active network.                                                                       |
+| `cmu network ping [name]`           | Ping a network to check connectivity and latency.                                              |
 
 Running `cmu network` with no subcommand lists the saved networks, exactly as `cmu network list` does.
 
@@ -63,9 +63,9 @@ cmu network save http://10.64.24.101:8585 --name mainnet
 
 ### Options
 
-| Flag                | Description                                                                                                                                                |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `-n, --name <name>` | Name to save the network under. Required.                                                                                                                  |
+| Flag                | Description                                                                                                                                                       |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-n, --name <name>` | Name to save the network under. Required.                                                                                                                         |
 | `--symbol <symbol>` | Coin symbol that amounts on this network are labelled with: 1-11 letters or digits, stored as typed. No short form. Since 1.7.0. See [Coin Symbol](#coin-symbol). |
 
 ### Behavior
@@ -86,14 +86,14 @@ invalid RPC endpoint 'ftp://node.example'.
 hint: pass a full http:// or https:// URL, e.g. `cmu network save http://127.0.0.1:8585 --name local`.
 ```
 
-| Endpoint                               | Result                                    |
-| -------------------------------------- | ----------------------------------------- |
-| `http://127.0.0.1:8585`                | Accepted.                                 |
-| `https://user:pw@node.example/rpc?k=1` | Accepted, credentials and query included. |
-| `localhost:8545`                       | Rejected — no scheme.                     |
-| `http://`                              | Rejected — no host.                       |
-| `http://bad host`                      | Rejected.                                 |
-| `ftp://node.example`                   | Rejected — only `http:` and `https:`.     |
+| Endpoint                               | Result                                                                                                             |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `http://127.0.0.1:8585`                | Accepted.                                                                                                          |
+| `https://user:pw@node.example/rpc?k=1` | Accepted, credentials and query included. Printed masked; see [Credentials in RPC URLs](#credentials-in-rpc-urls). |
+| `localhost:8545`                       | Rejected — no scheme.                                                                                              |
+| `http://`                              | Rejected — no host.                                                                                                |
+| `http://bad host`                      | Rejected.                                                                                                          |
+| `ftp://node.example`                   | Rejected — only `http:` and `https:`.                                                                              |
 
 The endpoint is not contacted when saving, so an unreachable node is accepted. The name is not validated either: any string works, including spaces and `/`.
 
@@ -120,10 +120,10 @@ Since 1.7.0, each saved network can carry a coin symbol. [`cmu wallet balance`](
 cmu network save http://127.0.0.1:8585 --name kampus --symbol tCMU
 ```
 
-| Saved network                                       | Amounts are labelled                 |
-| --------------------------------------------------- | ------------------------------------ |
-| Saved with `--symbol`                               | With that symbol, e.g. `100.0 CMU`.  |
-| Saved without one, or saved before 1.7.0            | `ETH`, as before.                    |
+| Saved network                                        | Amounts are labelled                |
+| ---------------------------------------------------- | ----------------------------------- |
+| Saved with `--symbol`                                | With that symbol, e.g. `100.0 CMU`. |
+| Saved without one, or saved before 1.7.0             | `ETH`, as before.                   |
 | `local` in a `~/.cmu-networks.json` created by 1.7.0 | `CMU` — the file is seeded with it. |
 
 The symbol is only a label. Amounts are still read and written with 18 decimals, and `wei` values are unchanged.
@@ -247,11 +247,19 @@ cmu network delete staging
 
 ### Behavior
 
-The command refuses to delete the network currently selected in the session:
+`local` can never be deleted, with or without a session, since every fallback points at it. Since 1.7.2:
 
 ```bash
 error: network delete failed
-network 'local' is currently active and cannot be deleted.
+network 'local' is the built-in fallback and cannot be deleted.
+hint: point it at another endpoint with `cmu network save <url> --name local`.
+```
+
+The command also refuses to delete the network currently selected in the session:
+
+```bash
+error: network delete failed
+network 'staging' is currently active and cannot be deleted.
 hint: switch away first with `cmu network use <name>`.
 ```
 
@@ -264,8 +272,8 @@ Only the session in the **current** directory is checked. The saved list is shar
 | `cmu network info`, `cmu network ping`              | `active network '<name>' is no longer saved.` |
 | `cmu wallet info`, `cmu wallet balance`, `cmu mine` | `network '<name>' is not saved.`              |
 
-::: warning
-In a directory without a session, nothing counts as active for `delete`, so `cmu network delete local` succeeds — even though `cmu network list` marks `local` as active there. `local` is not re-created afterwards, and every fallback to it then fails, including the network a later `cmu wallet use` records. Restore it with `cmu network save http://127.0.0.1:8585 --name local`. Tracked as [CointMU-CLI#212](https://github.com/Cointmu-ORG/CointMU-CLI/issues/212).
+::: info
+In 1.7.1 and older, `cmu network delete local` succeeded in a directory without a session, leaving every fallback to `local` pointing at nothing. If `local` is missing from `~/.cmu-networks.json` for that reason, restore it with `cmu network save http://127.0.0.1:8585 --name local`. `cmu wallet use` warns about a missing `local` each time it falls back to it; see [Active Network](/docs/cli/wallet#active-network).
 :::
 
 ### Output
@@ -331,12 +339,13 @@ cmu network ping mainnet
 
 When `[name]` is supplied, the network is looked up in the saved network store and no session is required. When it is omitted, the command reads `activeNetwork` from `.cmu-session` and therefore requires an active session.
 
-Latency is measured as the elapsed time around a single `eth_blockNumber` call, so it reflects RPC round-trip time rather than block production speed.
+The endpoint is first checked the same way as [`cmu deploy --ping`](/docs/cli/deploy#connectivity-check): it must report its chain ID within 3 seconds. Since 1.7.2. Latency is then measured as the elapsed time around a single `eth_blockNumber` call, so it reflects RPC round-trip time rather than block production speed.
 
 ### Output
 
 ```bash
-Pinging local (http://127.0.0.1:8585)...
+Pinging http://127.0.0.1:8585...
+Connected to 'local' (chain ID 1912).
 --- Ping result ---
 Network      : local
 Block number : 1482
@@ -344,17 +353,17 @@ Latency      : 12ms
 -------------------
 ```
 
-The command exits with code `1` if the endpoint is unreachable. The error is ethers' own, preceded by its retry notice:
+The command exits with code `1` if the endpoint is unreachable:
 
 ```bash
-Pinging geth (http://127.0.0.1:18546)...
-JsonRpcProvider failed to detect network and cannot start up; retry in 1s (perhaps the URL is wrong or the node is not started)
+Pinging http://127.0.0.1:9...
 
 error: network ping failed
-connect ECONNREFUSED 127.0.0.1:18546
+RPC endpoint http://127.0.0.1:9 is unreachable (timed out after 3000ms).
+hint: check the node is running and the endpoint is correct - `cmu network list`.
 ```
 
-An endpoint that does not answer at all fails with `request timeout (code=TIMEOUT, version=6.17.0)` instead. Tracked as [CointMU-CLI#214](https://github.com/Cointmu-ORG/CointMU-CLI/issues/214).
+The message is the same whether the connection is refused at once or the endpoint does not answer at all; only the latter actually waits the 3 seconds. In 1.7.1 and older the command printed ethers' retry notice and its raw error instead.
 
 ---
 
@@ -372,12 +381,12 @@ Before the subcommands existed, `cmu network` took its actions as flags on the r
 Each prints, before doing the work:
 
 ```bash
-warning: `cmu network --save` is deprecated and will be removed in 2.0.0
+warning: `cmu network --save` is deprecated
 hint: use `cmu network save <url> --name <name>` instead.
 ```
 
-::: danger REMOVED IN 2.0.0
-These flags are scheduled for removal in `2.0.0`. Migrate scripts and CI pipelines to the subcommand form now.
+::: warning DEPRECATED SINCE 1.3.6
+No removal release is scheduled. Until 1.7.1 the warning ended with `and will be removed in 2.0.0`; since 1.7.2 it names no release. The flags may still be removed in a later major version, so migrate scripts and CI pipelines to the subcommand form.
 :::
 
 Only one action runs per invocation. The flags are evaluated in a fixed order and the command returns after the first match:
@@ -403,13 +412,13 @@ The delete flag is a **capital** `-D`. A lowercase `-d` is not registered and is
 
 Saved networks are kept in `.cmu-networks.json` as an array of entries:
 
-| Field    | Description                                                                                       |
-| -------- | ------------------------------------------------------------------------------------------------- |
-| `name`   | The identifier used by `use` and `delete`.                                                        |
-| `rpcUrl` | The JSON-RPC endpoint of the network.                                                             |
+| Field    | Description                                                                                          |
+| -------- | ---------------------------------------------------------------------------------------------------- |
+| `name`   | The identifier used by `use` and `delete`.                                                           |
+| `rpcUrl` | The JSON-RPC endpoint of the network.                                                                |
 | `symbol` | Optional. The [coin symbol](#coin-symbol) amounts are labelled with; `ETH` when absent. Since 1.7.0. |
 
-On first read the file is seeded with a single entry, `local` pointing at `http://127.0.0.1:8585`. Since 1.7.0 the seeded entry has the symbol `CMU`. It is only seeded when the file does not exist, so a deleted `local` stays deleted, and a file created by an older `cmu` keeps its `local` without a symbol.
+On first read the file is seeded with a single entry, `local` pointing at `http://127.0.0.1:8585`. Since 1.7.0 the seeded entry has the symbol `CMU`. It is only seeded when the file does not exist, so a file created by an older `cmu` keeps its `local` without a symbol, and a `local` removed by hand, or deleted by 1.7.1 or older, is not re-created. `cmu network delete local` is refused since 1.7.2.
 
 ```json
 [
@@ -433,8 +442,28 @@ hint: set it again with `cmu network save http://127.0.0.1:8585 --name local --s
 
 Re-saving that network without `--symbol` keeps the broken value and says so (`symbol "c m" kept`), so pass a new `--symbol`.
 
+Since 1.7.2 the file is written with `0600` permissions, readable only by the owning user, like `~/.cmu-wallets.json` and `.cmu-session`. It is replaced atomically, through a temporary file renamed over it, so an interrupted write leaves the previous file intact. A file that 1.7.1 or older wrote with `0644` is tightened to `0600` the next time anything writes it, including a save that only updates a symbol.
+
+### Credentials in RPC URLs
+
+The file stores each `rpcUrl` exactly as typed. Since 1.7.2, every URL `cmu` prints — in `save`, `list`, `info`, `cmu wallet info`, the `Pinging` and `RPC endpoint` lines of every command, and error messages including `-v` output — has its password and every query value replaced by `***`:
+
+```bash
+cmu network save 'https://alice:s3cret@rpc.example.com/v1?apikey=abc&x=1' --name infura
+```
+
+```bash
+Saved network 'infura' (https://alice:***@rpc.example.com/v1?apikey=***&x=***)
+```
+
+A username on its own is masked as well; with a password, the username is kept. A URL with nothing to mask is printed exactly as typed. A hint that is a command to run again shows `<url>` instead of a masked URL, since running it with `***` would save `***` as the password:
+
+```bash
+hint: e.g. `cmu network save <url> --name infura --symbol CMU`.
+```
+
 ::: warning
-The file is written with your default permissions — `0644` under the usual umask — so other users on the machine can read it. Unlike `~/.cmu-wallets.json` and `.cmu-session`, which are `0600`. Avoid saving endpoints that embed credentials, or restrict the file yourself with `chmod 600 ~/.cmu-networks.json`; saves keep the mode of an existing file. Tracked as [CointMU-CLI#213](https://github.com/Cointmu-ORG/CointMU-CLI/issues/213).
+A key in the URL **path** is not recognised and is printed in full, such as the project ID in `https://mainnet.example.io/v3/<key>`. Pass keys as a query parameter or userinfo where the provider allows it, or keep such output out of logs.
 :::
 
 ::: info

@@ -76,13 +76,27 @@ When the installed version already matches the target:
 
 ```bash
 Checking the npm registry...
-current version : 1.3.7
-target version  : 1.3.7
+current version : 1.7.3
+target version  : 1.7.3
 
 Already on the target version. Nothing to do.
 ```
 
 If the registry is unreachable, the version is invalid, or the global install fails, the command prints an error message and exits with code `1`.
+
+If npm itself cannot be started — not installed, or not on `PATH` — the command says so instead of reporting a registry problem. Since 1.7.3; before, it printed only the bare `spawnSync npm ENOENT`:
+
+```bash
+Checking the npm registry...
+
+error: update failed
+npm could not be started: spawnSync npm ENOENT
+hint: make sure Node.js and its npm are installed and on PATH, then run `cmu update` again.
+```
+
+::: warning NOT VERIFIED ON WINDOWS
+On Windows, `cmu update` used to start `npm.cmd`, which current Node.js refuses to run without a shell (`spawn EINVAL`). Since 1.7.3 it runs npm's `npm-cli.js` with the Node.js running `cmu` instead. This has not been verified on Windows for these docs. If `cmu update` fails there, run `npm install -g cointmu-cli@latest` directly.
+:::
 
 ## Install Failures
 

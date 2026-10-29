@@ -24,10 +24,10 @@ If validation fails, the command exits before any files are generated.
 
 ## Options
 
-| Flag                        | Description                                   | Allowed Values                                                                                          |
-| --------------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Flag                        | Description                                   | Allowed Values                                                                                         |
+| --------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | `-t, --template <template>` | Select the scaffold template to generate.     | `blank`, `erc20`, `erc721`, `erc1155`, `dao`, `marketplace`, `staking`, `airdrop`, `vault`, `kyberion` |
-| `-l, --language <language>` | Select the project language for the scaffold. | `typescript`, `javascript`                                                                              |
+| `-l, --language <language>` | Select the project language for the scaffold. | `typescript`, `javascript`                                                                             |
 
 `-v, --verbose` is available globally; see [Global Options](/docs/cli/overview#global-options).
 
@@ -137,6 +137,8 @@ coverage/
 
 # CointMU local session & network state (encrypted key / local-only config)
 .cmu-session
+.cmu-session.*.tmp
+.cmu-session.bak-*
 .cmu-networks.json
 .cmu-wallets.json
 
@@ -153,17 +155,19 @@ logs
 npm-debug.log*
 ```
 
+`.cmu-session.*.tmp` is the temporary file an interrupted session write can leave behind, and `.cmu-session.bak-*` is the copy [`cmu wallet use`](/docs/cli/wallet#sessions-cmu-cannot-open) keeps before replacing a session it cannot open. Both hold an encrypted key and are listed since 1.7.1; add them to the `.gitignore` of a project created earlier.
+
 `.cmu-networks.json` and `.cmu-wallets.json` live in your home directory, not the project; they are listed so a copy can never be committed by accident. Only `deployments/local/` is ignored: records for shared networks are meant to be committed, so everyone on the project resolves the same addresses.
 
 ## Dependency Installation
 
 After the files are written, `cmu create` runs `npm install` inside the new project directory and installs its baseline dependencies:
 
-| Dependency set | Packages                                                            |
-| -------------- | ------------------------------------------------------------------- |
-| Runtime        | `ethers`                                                            |
+| Dependency set | Packages                                                                                 |
+| -------------- | ---------------------------------------------------------------------------------------- |
+| Runtime        | `ethers`                                                                                 |
 | TypeScript dev | `@types/node`, `mocha`, `chai`, `@types/mocha`, `@types/chai`, `ts-node`, `typescript@5` |
-| JavaScript dev | `mocha`, `chai`                                                     |
+| JavaScript dev | `mocha`, `chai`                                                                          |
 
 Installer output is streamed directly to the terminal, so the command takes noticeably longer than file generation alone.
 

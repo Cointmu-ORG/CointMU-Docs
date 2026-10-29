@@ -61,6 +61,8 @@ hint: list saved networks with `cmu network list`, or add one with `cmu network 
 Against the DevNet, or any node that does not expose the `miner` API, `start` and `stop` explain why rather than failing with a raw provider error:
 
 ```bash
+Pinging http://127.0.0.1:8585...
+Connected to 'local' (chain ID 1912).
 Setting etherbase to 0xbc4671Dd2101BD2dC1334917eA18675f7fFC8dE2...
 
 error: mine start failed
@@ -97,11 +99,12 @@ cmu mine start --watch
 
 1. Reads `address` and `activeNetwork` from `.cmu-session`.
 2. Resolves `activeNetwork` from the saved networks.
-3. Calls `eth_mining` and `eth_coinbase`. If the node is already mining to a different address, prints a warning and carries on.
-4. Sends `miner_setEtherbase` with the session address.
-5. Sends `miner_start` with `1`, a single mining thread.
+3. Checks that the endpoint answers within 3 seconds, the same check as [`cmu deploy --ping`](/docs/cli/deploy#connectivity-check). Since 1.7.2.
+4. Calls `eth_mining` and `eth_coinbase`. If the node is already mining to a different address, prints a warning and carries on. A node with no etherbase set yet counts as none, not as a failure. Since 1.7.1.
+5. Sends `miner_setEtherbase` with the session address.
+6. Sends `miner_start` with `1`, a single mining thread.
 
-The JSON-RPC calls, in order:
+After the endpoint check, the JSON-RPC calls, in order:
 
 | Call                 | Parameters              |
 | -------------------- | ----------------------- |
@@ -113,6 +116,8 @@ The JSON-RPC calls, in order:
 ### Output
 
 ```bash
+Pinging http://127.0.0.1:18545...
+Connected to 'geth' (chain ID 1912).
 Setting etherbase to 0x70997970C51812dc3A010C7d01b50e0d17dc79C8...
 Starting miner on geth...
 Mining started.
@@ -133,20 +138,22 @@ hint: starting moves its rewards to 0x70997970C51812dc3A010C7d01b50e0d17dc79C8. 
 | No `.cmu-session`               | `no active session.`                                                                   |
 | Session network no longer saved | `network '<name>' is not saved.`                                                       |
 | Node has no `miner` API         | `network '<name>' has no miner_setEtherbase RPC, so mining cannot be controlled here.` |
-| Node unreachable                | ethers' raw connection error, e.g. `connect ECONNREFUSED 127.0.0.1:8585`               |
-| Geth with no etherbase set yet  | A raw `could not coalesce error` — see below.                                          |
+| Node unreachable                | `RPC endpoint <url> is unreachable (timed out after 3000ms).`                          |
 
-An unreachable node also prints ethers' `JsonRpcProvider failed to detect network and cannot start up; retry in 1s ...` notice before the error. Tracked as [CointMU-CLI#214](https://github.com/Cointmu-ORG/CointMU-CLI/issues/214).
-
-::: warning
-A freshly started geth node with no local accounts has no etherbase, and answers `eth_coinbase` with an error instead of an address. `cmu mine start` fails on that answer in step 3, **before** it sends the `miner_setEtherbase` that would fix it:
+An unreachable node fails in the endpoint check, before any miner call:
 
 ```bash
+Pinging http://127.0.0.1:18545...
+
 error: mine start failed
-could not coalesce error (error={ "code": -32000, "message": "etherbase must be explicitly specified" }, payload={ "id": 3, "jsonrpc": "2.0", "method": "eth_coinbase", "params": [  ] }, code=UNKNOWN_ERROR, version=6.17.0)
+RPC endpoint http://127.0.0.1:18545 is unreachable (timed out after 3000ms).
+hint: check the node is running and the endpoint is correct - `cmu network list`.
 ```
 
-Set any etherbase on the node once by hand — `miner.setEtherbase("0x...")` in `geth attach` — then `cmu mine start` works and replaces it. `cmu mine status` fails the same way on such a node. Tracked as [CointMU-CLI#210](https://github.com/Cointmu-ORG/CointMU-CLI/issues/210).
+The message says `timed out` for every failure of the check, including a refused connection that fails at once. Since 1.7.2; before, `cmu mine` printed ethers' retry notice and its raw connection error.
+
+::: info
+A freshly started geth node with no local accounts has no etherbase until something sets one. Since 1.7.1 `cmu mine start` treats that as no etherbase and sets it to the session wallet, and [`cmu mine status`](#cmu-mine-status) shows `Etherbase    : none set`. In 1.7.0 and older both commands failed on such a node with a raw `could not coalesce error`.
 :::
 
 ### Watching Progress
@@ -217,6 +224,8 @@ The node is not asked whether it was mining first, so stopping an idle node stil
 ### Output
 
 ```bash
+Pinging http://127.0.0.1:18545...
+Connected to 'geth' (chain ID 1912).
 Stopping miner on geth...
 Mining stopped.
 ```
@@ -235,11 +244,13 @@ cmu mine status
 
 ### Behavior
 
-The command reads the latest block, then in parallel `eth_mining`, `eth_hashrate`, `eth_coinbase`, and the session wallet's balance at that same block.
+After the same endpoint check as [`cmu mine start`](#behavior), the command reads the latest block, then in parallel `eth_mining`, `eth_hashrate`, `eth_coinbase`, and the session wallet's balance at that same block.
 
 ### Output
 
 ```bash
+Pinging http://127.0.0.1:18545...
+Connected to 'geth' (chain ID 1912).
 --- Mining status ---
 Network      : geth (http://127.0.0.1:18545)
 Mining       : yes
@@ -258,25 +269,27 @@ When the node mines to another address, the `Etherbase` line says so:
 Etherbase    : 0x70997970c51812dc3a010c7d01b50e0d17dc79c8 (not your session wallet - rewards go there)
 ```
 
-| Field          | Source                                                                                           |
-| -------------- | ------------------------------------------------------------------------------------------------ |
-| `Network`      | The session's active network and its RPC endpoint.                                               |
-| `Mining`       | `eth_mining`: `yes`, `no`, or `n/a` when the node does not support it.                           |
-| `Hashrate`     | `eth_hashrate`, scaled to `H/s` … `TH/s`, or `n/a`.                                              |
-| `Etherbase`    | `eth_coinbase`, or `n/a`. Marked `(not your session wallet - rewards go there)` when it differs. |
-| `Latest block` | Number and age of the latest block. Ages are shown in `s`, `m` or `h`.                           |
-| `Difficulty`   | The latest block's difficulty.                                                                   |
-| `Wallet`       | The session address.                                                                             |
-| `Balance`      | The session wallet's balance at the latest block, labelled with the network's [coin symbol](/docs/cli/network#coin-symbol), or `ETH` when it has none. Since 1.7.0; before, always `ETH`. |
+| Field          | Source                                                                                                                                                                                          |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Network`      | The session's active network and its RPC endpoint.                                                                                                                                              |
+| `Mining`       | `eth_mining`: `yes`, `no`, or `n/a` when the node does not support it.                                                                                                                          |
+| `Hashrate`     | `eth_hashrate`, scaled to `H/s` … `TH/s`, or `n/a`.                                                                                                                                             |
+| `Etherbase`    | `eth_coinbase`. `none set` when the node has no etherbase yet; `n/a` when the node has no miner API, such as the DevNet. Marked `(not your session wallet - rewards go there)` when it differs. |
+| `Latest block` | Number and age of the latest block. Ages are shown in `s`, `m`, `h` or, since 1.7.2, `d`.                                                                                                       |
+| `Difficulty`   | The latest block's difficulty.                                                                                                                                                                  |
+| `Wallet`       | The session address.                                                                                                                                                                            |
+| `Balance`      | The session wallet's balance at the latest block, labelled with the network's [coin symbol](/docs/cli/network#coin-symbol), or `ETH` when it has none. Since 1.7.0; before, always `ETH`.       |
 
 Against the DevNet the miner fields read `n/a`:
 
 ```bash
+Pinging http://127.0.0.1:8585...
+Connected to 'local' (chain ID 1912).
 --- Mining status ---
 Network      : local (http://127.0.0.1:8585)
 Mining       : n/a
 Hashrate     : n/a
-Etherbase    : 0xc014ba5ec014ba5ec014ba5ec014ba5ec014ba5e (not your session wallet - rewards go there)
+Etherbase    : n/a
 Latest block : #0, 16s ago
 Difficulty   : 0
 Wallet       : 0xbc4671Dd2101BD2dC1334917eA18675f7fFC8dE2
@@ -286,9 +299,7 @@ Balance      : 100.0 CMU
 
 `CMU` is the symbol of `local` in a `~/.cmu-networks.json` created by 1.7.0. A `local` saved by an older `cmu` shows `ETH` until it is [given a symbol](/docs/cli/network#coin-symbol).
 
-::: warning
-The DevNet's `Etherbase` is a fixed placeholder address, not a reward recipient — the DevNet pays no block rewards. The `rewards go there` note is wrong there. Tracked as [CointMU-CLI#211](https://github.com/Cointmu-ORG/CointMU-CLI/issues/211), which also covers ages beyond hours being printed as large `h` values.
-:::
+The DevNet answers `eth_coinbase` with a fixed placeholder address that no reward ever goes to, so since 1.7.2 `Etherbase` reads `n/a` whenever `Mining` does. In 1.7.0 and 1.7.1 it printed the placeholder, marked `rewards go there`.
 
 ---
 

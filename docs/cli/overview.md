@@ -53,8 +53,22 @@ hint: e.g. `cmu network save http://127.0.0.1:8585 --name local`.
 Failures exit with code `1`. Pass `-v` to print the full error object with stack frames instead of the message alone.
 
 ::: info
-Paths printed in errors have your home directory replaced with `~`, both in plain messages and in `-v` stack traces.
+Paths printed in errors have your home directory replaced with `~`, both in plain messages and in `-v` stack traces. Since 1.7.2, URLs in errors also have their credentials and query values masked; see [Credentials in RPC URLs](/docs/cli/network#credentials-in-rpc-urls).
 :::
+
+## Color Output
+
+Labels such as `error:`, `warning:` and `hint:` are colored only when color is wanted. Since 1.7.2 the first matching rule decides, separately for stdout and stderr:
+
+| Condition                              | Color |
+| -------------------------------------- | ----- |
+| `FORCE_COLOR=0` or `FORCE_COLOR=false` | Off   |
+| `FORCE_COLOR` set to anything else     | On    |
+| `NO_COLOR` set and not empty           | Off   |
+| The stream is a terminal               | On    |
+| Otherwise (pipe or file)               | Off   |
+
+Only color codes are removed; prompts and the `cmu mine start --watch` status line still redraw. In 1.7.1 and older, color codes were written to pipes and files as well.
 
 ## Runtime Requirements
 

@@ -12,16 +12,16 @@ cmu wallet <subcommand> [options]
 
 ## Subcommands
 
-| Subcommand                           | Description                                                    |
-| ------------------------------------ | -------------------------------------------------------------- |
-| `cmu wallet create`                  | Generate a new EVM-compatible wallet.                          |
-| `cmu wallet balance`                 | Show the native token balance of the active wallet.            |
-| `cmu wallet info`                    | Show the active wallet session.                                |
-| `cmu wallet save <name>`             | Save a private key as a named, encrypted wallet. Alias: `add`. |
-| `cmu wallet use <name>`              | Make a saved wallet the active session in this project.        |
-| `cmu wallet list`                    | List saved wallets.                                            |
-| `cmu wallet delete <name>`           | Delete a saved wallet.                                         |
-| `cmu wallet transfer <to> <amount>`  | Send the network's native coin from the session wallet. Alias: `tf`. |
+| Subcommand                          | Description                                                          |
+| ----------------------------------- | -------------------------------------------------------------------- |
+| `cmu wallet create`                 | Generate a new EVM-compatible wallet.                                |
+| `cmu wallet balance`                | Show the native token balance of the active wallet.                  |
+| `cmu wallet info`                   | Show the active wallet session.                                      |
+| `cmu wallet save <name>`            | Save a private key as a named, encrypted wallet. Alias: `add`.       |
+| `cmu wallet use <name>`             | Make a saved wallet the active session in this project.              |
+| `cmu wallet list`                   | List saved wallets.                                                  |
+| `cmu wallet delete <name>`          | Delete a saved wallet.                                               |
+| `cmu wallet transfer <to> <amount>` | Send the network's native coin from the session wallet. Alias: `tf`. |
 
 There are two places a key can live:
 
@@ -51,14 +51,21 @@ hint: run this in a terminal.
 
 For `cmu deploy` and `cmu console` in CI, set `PRIVATE_KEY` instead; see [Resolving the Signing Key](/docs/cli/deploy#resolving-the-signing-key). `cmu wallet transfer` has no non-interactive form.
 
-Pressing `Ctrl+C` at any of these prompts writes nothing. Only `transfer` says so (`aborted: nothing was sent.`); the others print inquirer's own message:
+Pressing `Ctrl+C` or `Ctrl+D` at any of these prompts writes nothing, exits with code `1`, and says what was left alone:
+
+| Command                         | Message                                  |
+| ------------------------------- | ---------------------------------------- |
+| `save`, `create --save`         | `aborted: nothing was saved.`            |
+| `use`, at the password prompt   | `aborted: .cmu-session was not changed.` |
+| `delete`                        | `aborted: nothing was deleted.`          |
+| `transfer`                      | `aborted: nothing was sent.`             |
 
 ```bash
 error: wallet save failed
-User force closed the prompt with SIGINT
+aborted: nothing was saved.
 ```
 
-Tracked as [CointMU-CLI#215](https://github.com/Cointmu-ORG/CointMU-CLI/issues/215).
+Since 1.7.2; before, every command but `transfer` printed inquirer's own `User force closed the prompt with SIGINT`.
 :::
 
 ---
@@ -76,8 +83,8 @@ cmu wallet create --save <name>
 
 ### Options
 
-| Flag            | Description                                                                                                  |
-| --------------- | ------------------------------------------------------------------------------------------------------------ |
+| Flag            | Description                                                                                                         |
+| --------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `--save <name>` | Encrypt the new key into `~/.cmu-wallets.json` under `<name>` and print only the address and mnemonic. Since 1.5.0. |
 
 ### Default Behavior
@@ -154,11 +161,11 @@ removed; use wallet save + wallet use (or wallet create --save)
 
 Use instead:
 
-| You want to                         | Run                                                          |
-| ----------------------------------- | ------------------------------------------------------------ |
-| Sign with a key you already have    | `cmu wallet save <name>`, then `cmu wallet use <name>`       |
-| Sign with a new key                 | `cmu wallet create --save <name>`, then `cmu wallet use <name>` |
-| Sign in CI                          | Set `PRIVATE_KEY`; see [Resolving the Signing Key](/docs/cli/deploy#resolving-the-signing-key) |
+| You want to                      | Run                                                                                            |
+| -------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Sign with a key you already have | `cmu wallet save <name>`, then `cmu wallet use <name>`                                         |
+| Sign with a new key              | `cmu wallet create --save <name>`, then `cmu wallet use <name>`                                |
+| Sign in CI                       | Set `PRIVATE_KEY`; see [Resolving the Signing Key](/docs/cli/deploy#resolving-the-signing-key) |
 
 A `.cmu-session` written by `login` in 1.3.2 or later keeps working with its password, because the file format did not change; one from 1.3.1 or older does not (see [Replacing a Session](#replacing-a-session)). If its key is not saved anywhere else, keep it with [`cmu wallet save <name> --session`](#saving-the-session-key) before running `cmu wallet use` in that project.
 :::
@@ -188,7 +195,8 @@ hint: run `cmu wallet use <name>` first, or `cmu wallet create --save <name>` an
 ### Output
 
 ```bash
-Connecting to local (http://127.0.0.1:8585)...
+Pinging http://127.0.0.1:8585...
+Connected to 'local' (chain ID 1912).
 ---------------------------
 Address : 0x...
 Balance : 100.0 CMU
@@ -197,17 +205,17 @@ Balance : 100.0 CMU
 
 Since 1.7.0 the balance is labelled with the active network's [coin symbol](/docs/cli/network#coin-symbol). A network saved without one, including a `local` saved by an older `cmu`, still shows `ETH`; `cmu network save http://127.0.0.1:8585 --name local --symbol CMU` changes that.
 
-Only the plaintext address in `.cmu-session` is read, so no password is asked for. An unreachable node fails with ethers' raw error, preceded by its `JsonRpcProvider failed to detect network ...` retry notice:
+Only the plaintext address in `.cmu-session` is read, so no password is asked for. The endpoint must answer within 3 seconds, the same check as [`cmu deploy --ping`](/docs/cli/deploy#connectivity-check):
 
 ```bash
-Connecting to local (http://127.0.0.1:8585)...
-JsonRpcProvider failed to detect network and cannot start up; retry in 1s (perhaps the URL is wrong or the node is not started)
+Pinging http://127.0.0.1:8585...
 
 error: wallet balance failed
-connect ECONNREFUSED 127.0.0.1:8585
+RPC endpoint http://127.0.0.1:8585 is unreachable (timed out after 3000ms).
+hint: check the node is running and the endpoint is correct - `cmu network list`.
 ```
 
-Tracked as [CointMU-CLI#214](https://github.com/Cointmu-ORG/CointMU-CLI/issues/214).
+The message says `timed out` even when the connection is refused at once. Since 1.7.2; 1.7.1 and older printed `Connecting to <name> (<url>)...` instead of the two `Pinging` lines, and failed with ethers' retry notice and raw error.
 
 ---
 
@@ -266,8 +274,8 @@ cmu wallet save <name> --session
 
 ### Options
 
-| Flag        | Description                                                                                          |
-| ----------- | ---------------------------------------------------------------------------------------------------- |
+| Flag        | Description                                                                                                                                     |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--session` | Save the key in this project's `.cmu-session` instead of prompting for one. Since 1.5.2. See [Saving the Session Key](#saving-the-session-key). |
 
 ### Behavior
@@ -290,11 +298,11 @@ hint: run `cmu wallet delete alice` first to replace it.
 
 The command then prompts for:
 
-| Prompt           | Description                                                                                   |
-| ---------------- | --------------------------------------------------------------------------------------------- |
+| Prompt           | Description                                                                                                              |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | Private key      | Masked. An unusable key is rejected at the prompt with `invalid private key - expected a 32-byte hex key (0x-prefixed).` |
-| Wallet password  | Must satisfy the [password policy](#password-policy).                                         |
-| Confirm password | Must match. A mismatch saves nothing: `passwords do not match.`                               |
+| Wallet password  | Must satisfy the [password policy](#password-policy).                                                                    |
+| Confirm password | Must match. A mismatch saves nothing: `passwords do not match.`                                                          |
 
 The password is asked twice because a typo here cannot be caught later — decrypting with the same mistyped password succeeds, and the real one would never open the wallet.
 
@@ -337,15 +345,17 @@ hint: run `cmu wallet use keep` in a project to make it active there.
 
 Use it to keep a key that exists only in a session — such as one written by `cmu wallet login` before 1.6.0 — before [replacing that session](#replacing-a-session).
 
-| Cause                                               | Message                                             |
-| --------------------------------------------------- | --------------------------------------------------- |
-| The session's address is already a saved wallet     | `this session's key is already saved as '<name>'.`  |
-| No `.cmu-session` here, or one without a usable key | `this project's .cmu-session holds no key to save.` |
+| Cause                                               | Message                                                                                                                                                     |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The session's address is already a saved wallet     | `this session's key is already saved as '<name>'.`                                                                                                          |
+| No `.cmu-session` here, or one without a key        | `this project's .cmu-session holds no key to save.`                                                                                                         |
+| A key from cmu 1.3.1 or older, or an incomplete one | `this project's .cmu-session holds an encrypted key for 0x... that this version of cmu cannot open or save (written by cmu 1.3.1 or older, or incomplete).` |
+| A `.cmu-session` that is not valid JSON             | `.cmu-session is not valid JSON, so cmu cannot read a key from it.`                                                                                         |
 
 The name is checked first, under the same rules as without `--session`.
 
 ::: warning
-A session written by cmu 1.3.1 or older uses an earlier encryption format, and `--session` reports it as holding no key even though it does. See [Replacing a Session](#replacing-a-session).
+`--session` cannot keep a key from cmu 1.3.1 or older: that format cannot be opened by this version. Its hint says to keep a copy of the file somewhere safe; [`cmu wallet use`](#replacing-a-session) also keeps one as `.cmu-session.bak-<time>` before replacing it. Before 1.7.1 such a session was reported as holding no key.
 :::
 
 ---
@@ -363,7 +373,7 @@ cmu wallet use <name>
 ### Behavior
 
 1. Looks the wallet up in `~/.cmu-wallets.json`.
-2. If the current `.cmu-session` holds a key that is not a saved wallet, asks before replacing it — see [below](#replacing-an-unsaved-key). This happens before any password prompt.
+2. If the current `.cmu-session` holds, or may hold, a key that is not a saved wallet, asks before replacing it — see [below](#replacing-an-unsaved-key). This happens before any password prompt.
 3. Prompts for that wallet's password and decrypts the key to check it.
 4. Confirms that the decrypted key belongs to the address stored next to it.
 5. Copies the encrypted key into `.cmu-session`, keeping the session's [active network](#active-network).
@@ -415,6 +425,35 @@ hint: keep the key first with `cmu wallet save <name> --session`, or run this in
 
 After [`cmu wallet save <name> --session`](#saving-the-session-key) the key is a saved wallet, and `cmu wallet use` replaces the session without asking.
 
+### Sessions cmu Cannot Open
+
+Since 1.7.1, `cmu wallet use` also asks before replacing a `.cmu-session` it cannot read a key from, because the file may still hold one. Two kinds of file are affected, each with its own warning:
+
+```bash
+warning: .cmu-session holds an encrypted key for 0x70997970C51812dc3A010C7d01b50e0d17dc79C8 that this version of cmu cannot open (written by cmu 1.3.1 or older, or incomplete).
+If you replace it, cmu keeps a copy as .cmu-session.bak-<time> first.
+hint: to keep it out of the way instead, move .cmu-session somewhere safe, then run this command again.
+? Replace it anyway? (y/N)
+```
+
+```bash
+warning: .cmu-session is not valid JSON, so cmu cannot tell whether it holds a key.
+If you replace it, cmu keeps a copy as .cmu-session.bak-<time> first.
+hint: to keep it out of the way instead, fix it, or move .cmu-session somewhere safe, then run this command again.
+? Replace it anyway? (y/N)
+```
+
+Declining exits `1` with `aborted: .cmu-session was not changed; it still holds 0x....` when the address could be read, and `aborted: .cmu-session was not changed.` otherwise. Without a terminal the command refuses, with the hint `move .cmu-session somewhere safe first, or run this in a terminal to confirm.` (prefixed with `fix it, or` for invalid JSON).
+
+Answering yes copies the old file before the new session is written, owner-only, once the password has been checked. Two lines come before the usual output:
+
+```bash
+Kept the old session as .cmu-session.bak-2026-10-29T06-58-09-928Z.
+hint: it holds an encrypted key - keep it out of git: `.cmu-session.bak-*` in .gitignore.
+```
+
+A wrong password leaves no backup behind. A file that is empty or only whitespace holds no key and is replaced without asking. Projects created by `cmu create` 1.7.1 or newer already ignore `.cmu-session.bak-*`; add the line to an older project's `.gitignore`.
+
 ### Active Network
 
 `cmu wallet use` keeps the network the previous session had selected, so switching wallets does not undo a [`cmu network use <name>`](/docs/cli/network).
@@ -428,6 +467,12 @@ After [`cmu wallet save <name> --session`](#saving-the-session-key) the key is a
 
 ```bash
 warning: network 'staging' is no longer saved - active network reset to local.
+```
+
+Since 1.7.2, whenever the session falls back to `local` and `local` itself is not saved, the warning names the command that re-adds it instead:
+
+```bash
+warning: network 'local' is not saved - re-add it with `cmu network save http://127.0.0.1:8585 --name local`.
 ```
 
 The `Active network:` line in the output always names the network the new session points at.
@@ -527,9 +572,9 @@ cmu wallet transfer <to> <amount> --yes
 
 ### Arguments
 
-| Argument   | Description                                              |
-| ---------- | -------------------------------------------------------- |
-| `<to>`     | The recipient: a `0x`-prefixed, 40-digit hex address.    |
+| Argument   | Description                                                         |
+| ---------- | ------------------------------------------------------------------- |
+| `<to>`     | The recipient: a `0x`-prefixed, 40-digit hex address.               |
 | `<amount>` | The amount in the network's coin, as a plain decimal such as `0.5`. |
 
 ### Options
@@ -609,12 +654,12 @@ Everything that can be checked is checked **before** the password prompt, in thi
 6. The balance covers the amount plus the maximum fee.
 7. `--yes` is not being used to send to the zero address.
 
-| Failure                     | Message                                                                                     |
-| --------------------------- | ------------------------------------------------------------------------------------------- |
-| Balance below the amount    | `insufficient balance: 100.0 CMU, the transfer needs 1000.0 CMU plus fee.`                  |
-| Balance below amount + fee  | `balance 100.0 CMU covers the amount but not the max fee (0.000063003 CMU).`                |
-| Recipient rejects the coin  | `0x... would reject this transfer - the node could not estimate it (...).`, with the hint `a contract without a payable receive() or fallback() cannot take plain CMU.` |
-| Zero address with `--yes`   | `--yes does not cover sending to the zero address.`                                         |
+| Failure                    | Message                                                                                                                                                                 |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Balance below the amount   | `insufficient balance: 100.0 CMU, the transfer needs 1000.0 CMU plus fee.`                                                                                              |
+| Balance below amount + fee | `balance 100.0 CMU covers the amount but not the max fee (0.000063003 CMU).`                                                                                            |
+| Recipient rejects the coin | `0x... would reject this transfer - the node could not estimate it (...).`, with the hint `a contract without a payable receive() or fallback() cannot take plain CMU.` |
+| Zero address with `--yes`  | `--yes does not cover sending to the zero address.`                                                                                                                     |
 
 These conditions warn but do not stop the transfer:
 
@@ -708,19 +753,14 @@ A project has one `.cmu-session`, and [`cmu wallet use`](#cmu-wallet-use) is the
 | -------------------------------------- | ---------------------------------------------------------------------- |
 | A saved wallet                         | Replaced without asking — the key is still in `~/.cmu-wallets.json`.   |
 | Not a saved wallet                     | Asks first, defaulting to no; refuses without a terminal. Since 1.5.2. |
-| Unreadable, or from cmu 1.3.1 or older | **Replaced without asking** — see the warning below.                   |
+| Unreadable, or from cmu 1.3.1 or older | Asks first, and keeps a `.cmu-session.bak-<time>` copy. Since 1.7.1.   |
 
 ::: danger REPLACING AN UNSAVED KEY DELETES IT
 If you answer yes, a key that exists nowhere else — such as one written by `cmu wallet login` or `cmu wallet create --login` before 1.6.0 — is gone, along with any funds sent to it. Keep it first with [`cmu wallet save <name> --session`](#saving-the-session-key).
 :::
 
-::: danger SESSIONS REPLACED WITHOUT ASKING
-`cmu wallet use` only asks when it can read the old session and open its key format. It replaces these without asking, even though the key in them can still be recovered with its password:
-
-- A session written by **cmu 1.3.1 or older**, which used AES-256-CBC and has no `authTag` field. `cmu wallet save <name> --session` cannot keep it either.
-- A session whose JSON **does not parse**, such as one with a stray comma from a hand edit. The encrypted key is still in the file.
-
-Before running `cmu wallet use` in a project that may hold such a session, copy `.cmu-session` somewhere safe. Tracked as [CointMU-CLI#209](https://github.com/Cointmu-ORG/CointMU-CLI/issues/209).
+::: warning 1.7.0 AND OLDER
+Up to 1.7.0, `cmu wallet use` replaced a session from cmu 1.3.1 or older, or one whose JSON does not parse, without asking and without a backup. Since 1.7.1 it asks and keeps a copy; see [Sessions cmu Cannot Open](#sessions-cmu-cannot-open). On an older `cmu`, copy `.cmu-session` somewhere safe before running `cmu wallet use`.
 :::
 
 ---

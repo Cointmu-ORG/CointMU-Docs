@@ -69,7 +69,18 @@ warning: npm audit reported issues in the dependency tree.
 warning: solhint reported issues in the Solidity sources.
 ```
 
-If an unexpected error prevents the audit from running entirely, the command prints an error message and exits with code `1`.
+A tool that cannot start at all is a failure, not a finding. Since 1.7.3, if npm or npx is missing from `PATH` the command stops and exits with code `1`:
+
+```bash
+[1/2] Auditing Node.js dependencies
+> npm audit
+
+error: audit failed
+npm could not be started: spawn npm ENOENT
+hint: make sure Node.js and its npm are installed and on PATH, then run `cmu audit` again.
+```
+
+In 1.7.2 and older the same case printed both `reported issues` warnings, then `Audit complete.`, and exited `0` — an audit that never ran looked like one with findings.
 
 ::: warning
 A completed audit does not mean the project is free of issues. Review all warnings printed during each step before proceeding to deployment.
@@ -84,8 +95,8 @@ A completed audit does not mean the project is free of issues. Review all warnin
 
 ## Cross-Platform Compatibility
 
-The command uses a cross-platform child process wrapper so execution works reliably across operating systems.
+`npm` and `npx` are started without a shell, so file names from the project are never re-parsed by one.
 
-::: info
-On Windows, the command safely resolves command entry points such as `.cmd` binaries before spawning the process.
+::: warning NOT VERIFIED ON WINDOWS
+On Windows, npm and npx are `.cmd` shims, which current Node.js refuses to start without a shell. Up to 1.7.2 `cmu audit` failed there with `spawn EINVAL`. Since 1.7.3 it skips the shim and runs npm's own `npm-cli.js` / `npx-cli.js` with the Node.js running `cmu`, looked up beside the first `npm.cmd` on `PATH`, then beside `node.exe`. This fix was checked on Linux only and has **not** been verified on Windows for these docs. The CLI's CI runs its tests on Windows since 1.7.3.
 :::
