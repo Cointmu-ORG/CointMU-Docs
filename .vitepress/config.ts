@@ -60,6 +60,7 @@ export default defineConfig({
         items: [
           { text: "Overview", link: "/docs/app/overview" },
           { text: "Installation", link: "/docs/app/installation" },
+          { text: "Changelog", link: "/docs/app/changelog" },
           { text: "Dashboard & Network Stats", link: "/docs/app/dashboard" },
           { text: "Multi-Asset Wallet", link: "/docs/app/wallet" },
           { text: "Mining & Miner Distribution", link: "/docs/app/mining" },
