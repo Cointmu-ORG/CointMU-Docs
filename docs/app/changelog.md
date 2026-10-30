@@ -37,7 +37,7 @@ Each change below was checked against the app source at that version's tag. Chan
 
 ## Desktop Wallet
 
-### Latest {#desktop-latest}
+## Desktop: Latest {#desktop-latest}
 
 | Version | Codename | Released   |
 | ------- | -------- | ---------- |
@@ -52,7 +52,7 @@ Installed apps download new releases from GitHub on their own and install them o
 
 This table is updated by hand with each release. To see the newest release right now, run `gh release view --repo Cointmu-ORG/CointMU-App` or open the [releases page](https://github.com/Cointmu-ORG/CointMU-App/releases); to see what you have installed, open **Settings → About**.
 
-### Breaking Changes and Removals {#desktop-breaking}
+## Desktop: Breaking Changes and Removals {#desktop-breaking}
 
 | Version | Change                                                                                                                                                                                              | What to do                                                                                                                                                                   |
 | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -64,7 +64,7 @@ This table is updated by hand with each release. To see the newest release right
 | 1.6.17  | The app accepts the browser extension only after you approve it once (pairing). An extension linked before 1.6.17 is not paired. *(source-only)*                                                    | In the extension, choose **Link to Desktop App** again and approve the request in the app. See [Linking to the Desktop App](/docs/app/extension#linking-to-the-desktop-app). |
 | 1.6.2   | Chain ID changed from `7012` to `1912`, with a new genesis block. 1.6.1 and older run a different chain.                                                                                            | Update to 1.6.2 or newer.                                                                                                                                                    |
 
-### Platforms and Bundled Components {#desktop-platforms}
+## Desktop: Platforms and Bundled Components {#desktop-platforms}
 
 Platforms come from each release's assets: Windows is an NSIS installer (x64), macOS a `.dmg` and `.zip` for Apple silicon, Linux an AppImage and a `.deb` (x64) unless noted. Electron and the extension version were read from the running app and from the release's own `extension.zip`.
 
@@ -109,7 +109,7 @@ Every release from 1.5.0 on bundles the same Geth 1.10.26 build for Linux and Wi
 In these releases the bundled Linux `geth` is not marked executable, so the node never starts on Linux: the app logs `spawn … geth EACCES`. Fixed in [1.6.16](#desktop-v1-6-16). Every Linux build from 1.5.0 to 1.6.13 was run for this page and failed the same way.
 :::
 
-### Building from Source {#desktop-building}
+## Desktop: Building from Source {#desktop-building}
 
 | From   | Requirement                                                                                                                                                                             |
 | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -117,14 +117,14 @@ In these releases the bundled Linux `geth` is not marked executable, so the node
 | 1.6.17 | Node.js 24.15 or newer (`.nvmrc` pins 24); Node.js 22.22.2 or newer works with a warning. npm 12.2 or newer, through Corepack. See [Requirements](/docs/app/installation#requirements). |
 | 1.2.0  | No Node.js or npm version is declared.                                                                                                                                                  |
 
-### 1.7.4 — Obsidian {#desktop-v1-7-4}
+## Desktop 1.7.4 — Obsidian {#desktop-v1-7-4}
 
 Released 2026-10-30.
 
 - **Fixed** **Settings → Network → Connected peers** shows the node's real peer count. Before, it always read 14 ([CointMU-App#98](https://github.com/Cointmu-ORG/CointMU-App/issues/98)).
 - **Fixed** on Windows, geth is stopped cleanly when CointMU quits, when the app process dies, and before an update is installed, so the chain database is not left damaged or locked ([CointMU-App#97](https://github.com/Cointmu-ORG/CointMU-App/issues/97)). *(source-only)*
 
-### 1.7.3 — Garnet {#desktop-v1-7-3}
+## Desktop 1.7.3 — Garnet {#desktop-v1-7-3}
 
 Released 2026-10-29.
 
@@ -134,20 +134,20 @@ Released 2026-10-29.
 - **Fixed** more kinds of chain database damage (legacy receipts, freezer inconsistencies) start [self-healing](/docs/app/node#self-healing). *(source-only)*
 - **Fixed** the danger zone card in Settings in dark mode. *(source-only)*
 
-### 1.7.2 — Jade {#desktop-v1-7-2}
+## Desktop 1.7.2 — Jade {#desktop-v1-7-2}
 
 Released 2026-10-29.
 
 - **Changed** the Linux AppImage runs geth from a copy in `<userData>/geth-bin/`, outside the AppImage's mount, so geth can still shut down cleanly if the app process dies. *(source-only)*
 - **Changed** on Linux and macOS, the watcher that stops geth when the app process dies runs as a shell script. *(source-only)*
 
-### 1.7.1 — Onyx {#desktop-v1-7-1}
+## Desktop 1.7.1 — Onyx {#desktop-v1-7-1}
 
 Released 2026-10-28.
 
 - First Linux release of the 1.7.0 changes. No app changes since 1.7.0; only the release process was fixed.
 
-### 1.7.0 — Quartz {#desktop-v1-7-0}
+## Desktop 1.7.0 — Quartz {#desktop-v1-7-0}
 
 Released 2026-10-28, titled "1.7.0-rc1" on GitHub, for Windows and macOS only. There is no Linux build of 1.7.0; Linux users got these changes in 1.7.1.
 
@@ -158,7 +158,7 @@ Released 2026-10-28, titled "1.7.0-rc1" on GitHub, for Windows and macOS only. T
 - **Changed** geth is stopped when the app process dies, and a geth left running by an earlier app process is stopped at startup. *(source-only)*
 - **Removed** the mining **Mode** setting (solo or pool), which nothing read.
 
-### 1.6.18 — Medusa {#desktop-v1-6-18}
+## Desktop 1.6.18 — Medusa {#desktop-v1-6-18}
 
 Released 2026-10-23.
 
@@ -169,7 +169,7 @@ Released 2026-10-23.
 - **Removed** **Send anonymous analytics** from **Settings → Advanced**. It did nothing (*source-only*).
 - **Fixed** the node picks a P2P port that is free on both TCP and UDP. *(source-only)*
 
-### 1.6.17 — Siren {#desktop-v1-6-17}
+## Desktop 1.6.17 — Siren {#desktop-v1-6-17}
 
 Released 2026-10-20.
 
@@ -181,7 +181,7 @@ Released 2026-10-20.
 - **Fixed** when the P2P port 30303 or Geth's engine API port is taken, the node uses the next free port. *(source-only)*
 - Building from source needs Node.js 24.15 or newer and npm 12.2 or newer; see [Building from Source](#desktop-building).
 
-### 1.6.16 — Kitsune {#desktop-v1-6-16}
+## Desktop 1.6.16 — Kitsune {#desktop-v1-6-16}
 
 Released 2026-10-12. There is no 1.6.14 or 1.6.15 release.
 
@@ -191,7 +191,7 @@ Released 2026-10-12. There is no 1.6.14 or 1.6.15 release.
 - **Fixed** on Linux, the bundled geth is executable, so the node starts; see [Platforms and Bundled Components](#desktop-platforms).
 - **Fixed** resetting settings also clears old notifications, and the Reveal, Export and Reset dialogs in Security follow dark mode. *(source-only)*
 
-### 1.6.13 — Rhea {#desktop-v1-6-13}
+## Desktop 1.6.13 — Rhea {#desktop-v1-6-13}
 
 Released 2026-07-19.
 
@@ -199,38 +199,38 @@ Released 2026-07-19.
 - **Added** dark mode across the whole app, including the sign-in screens and notifications. *(source-only)*
 - **Added** deleting a hidden account asks for confirmation, and warns when the account still holds a small balance.
 
-### 1.6.12 — Mnemosyne {#desktop-v1-6-12}
+## Desktop 1.6.12 — Mnemosyne {#desktop-v1-6-12}
 
 Released 2026-07-18.
 
 - Bundles extension 1.0.14; see [Browser Extension 1.0.14](#extension-v1-0-14). No other user-facing changes.
 
-### 1.6.11 — Nike {#desktop-v1-6-11}
+## Desktop 1.6.11 — Nike {#desktop-v1-6-11}
 
 Released 2026-07-17.
 
 - No user-facing changes; the app's code was reorganized.
 
-### 1.6.10 — Hera {#desktop-v1-6-10}
+## Desktop 1.6.10 — Hera {#desktop-v1-6-10}
 
 Released 2026-07-11.
 
 - Bundles extension 1.0.11, the first with a standalone mode; see [Browser Extension 1.0.11](#extension-v1-0-11).
 
-### 1.6.9 — Hecate {#desktop-v1-6-9}
+## Desktop 1.6.9 — Hecate {#desktop-v1-6-9}
 
 Released 2026-07-10.
 
 - **Changed** the version number no longer contains the codename (1.6.9, not 1.6.9-Hecate).
 - **Changed** **Settings → About** groups update checks under **Software updates**. *(source-only)*
 
-### 1.6.8 — Aphrodite {#desktop-v1-6-8}
+## Desktop 1.6.8 — Aphrodite {#desktop-v1-6-8}
 
 Released 2026-07-10.
 
 - No user-facing changes; the update changes only affect development builds. *(source-only)*
 
-### 1.6.7 — Persephone {#desktop-v1-6-7}
+## Desktop 1.6.7 — Persephone {#desktop-v1-6-7}
 
 Released 2026-07-09.
 
@@ -241,19 +241,19 @@ Released 2026-07-09.
 - **Added** the app's own title bar, with minimize and close buttons.
 - The bundled extension is still 1.0.1.
 
-### 1.6.6 — Demeter {#desktop-v1-6-6}
+## Desktop 1.6.6 — Demeter {#desktop-v1-6-6}
 
 Released 2026-07-08.
 
 - **Changed** automatic updates include prereleases. *(source-only)*
 
-### 1.6.5 — Hestia {#desktop-v1-6-5}
+## Desktop 1.6.5 — Hestia {#desktop-v1-6-5}
 
 Released 2026-07-08.
 
 - **Added** interface languages: English, Bahasa Indonesia, Español, 中文, Русский and Deutsch, chosen in **Settings → General → Language**.
 
-### 1.6.4 — nemesis {#desktop-v1-6-4}
+## Desktop 1.6.4 — nemesis {#desktop-v1-6-4}
 
 Released 2026-07-08.
 
@@ -263,7 +263,7 @@ Released 2026-07-08.
 - **Added** mining activity: a 30-day contribution heat map and the blocks you mined. *(source-only)*
 - **Changed** updates download automatically again, and install on restart. *(source-only)*
 
-### 1.6.3 — selene {#desktop-v1-6-3}
+## Desktop 1.6.3 — selene {#desktop-v1-6-3}
 
 Released 2026-06-25.
 
@@ -271,13 +271,13 @@ Released 2026-06-25.
 - **Added** an address page in the Explorer, and generated avatars for accounts. *(source-only)*
 - **Changed** the Dashboard shows network health, your recent activity and the latest blocks. *(source-only)*
 
-### 1.6.2 — nyx {#desktop-v1-6-2}
+## Desktop 1.6.2 — nyx {#desktop-v1-6-2}
 
 Released 2026-06-12.
 
 - **Breaking** the chain ID changed from `7012` to `1912`, with a new genesis block. *(source-only)*
 
-### 1.6.1 — artemis {#desktop-v1-6-1}
+## Desktop 1.6.1 — artemis {#desktop-v1-6-1}
 
 Released 2026-06-03.
 
@@ -285,14 +285,14 @@ Released 2026-06-03.
 - **Added** Settings panels for Advanced, Security (auto-lock, recovery phrase, hardware wallet placeholders) and Notifications. *(source-only)*
 - **Fixed** a quick second press on **Send** could send twice. Sent transactions show as pending in the history until they are confirmed. *(source-only)*
 
-### 1.6.0 — Athena {#desktop-v1-6-0}
+## Desktop 1.6.0 — Athena {#desktop-v1-6-0}
 
 Released 2026-06-01.
 
 - **Added** revealing an account's private key after entering your password. *(source-only)*
 - **Changed** updates no longer download on their own: **Settings → About → Check for Updates** checks, and you choose to download. *(source-only)*
 
-### 1.5.6 — Lynx {#desktop-v1-5-6}
+## Desktop 1.5.6 — Lynx {#desktop-v1-5-6}
 
 Released 2026-06-01.
 
@@ -300,20 +300,20 @@ Released 2026-06-01.
 - **Added** the Mining log shows geth's own output as it runs. *(source-only)*
 - **Added** **Settings → About**, with the app version, chain settings and project links. *(source-only)*
 
-### 1.5.5 — WhiteSpruce {#desktop-v1-5-5}
+## Desktop 1.5.5 — WhiteSpruce {#desktop-v1-5-5}
 
 Released 2026-06-01. Includes the changes of the 1.5.4 tag, which was never released.
 
 - **Added** wallet history across all your accounts, with paging. *(source-only)*
 - **Changed** installer file names start with the platform: `linux-cointmu-desktop-<version>-installer.deb`, `macos-…`, `windows-…`.
 
-### 1.5.3 — pouch {#desktop-v1-5-3}
+## Desktop 1.5.3 — pouch {#desktop-v1-5-3}
 
 Released 2026-05-31.
 
 - **Added** macOS builds for Apple silicon (`.dmg` and `.zip`, not notarized). The node does not start on them ([CointMU-App#102](https://github.com/Cointmu-ORG/CointMU-App/issues/102)). *(source-only)*
 
-### 1.5.2 — gcsa {#desktop-v1-5-2}
+## Desktop 1.5.2 — gcsa {#desktop-v1-5-2}
 
 Released 2026-05-31, as a Linux AppImage only.
 
@@ -321,14 +321,14 @@ Released 2026-05-31, as a Linux AppImage only.
 - **Added** the Dashboard's network health panel and latest blocks. *(source-only)*
 - **Fixed** the mining session timer survives switching pages. *(source-only)*
 
-### 1.5.1 — grizzly {#desktop-v1-5-1}
+## Desktop 1.5.1 — grizzly {#desktop-v1-5-1}
 
 Released 2026-05-31.
 
 - **Added** the CointMU app icon. *(source-only)*
 - Windows installer and `.deb` package are back.
 
-### 1.5.0 — alaska {#desktop-v1-5-0}
+## Desktop 1.5.0 — alaska {#desktop-v1-5-0}
 
 Released 2026-05-31, as a Linux AppImage only.
 
@@ -337,7 +337,7 @@ Released 2026-05-31, as a Linux AppImage only.
 - **Added** the Explorer's chain timeline, network statistics and search. *(source-only)*
 - **Changed** first start is a step-by-step setup to create or import a wallet. *(source-only)*
 
-### 1.4.0 — dino {#desktop-v1-4-0}
+## Desktop 1.4.0 — dino {#desktop-v1-4-0}
 
 Released 2026-05-30.
 
@@ -345,7 +345,7 @@ Released 2026-05-30.
 - **Added** automatic updates from GitHub Releases. *(source-only)*
 - The node still does not start: no geth is bundled.
 
-### 1.3.0 — nebula {#desktop-v1-3-0}
+## Desktop 1.3.0 — nebula {#desktop-v1-3-0}
 
 Released 2026-05-30. The first release with installers: Windows (NSIS), Linux AppImage and `.deb`.
 
@@ -353,11 +353,11 @@ Released 2026-05-30. The first release with installers: Windows (NSIS), Linux Ap
 - The node does not start: no geth is bundled, and the app reports *Geth binary not found*.
 - Chain ID `7012`. *(source-only)*
 
-### 1.2.0 — tvrstsp {#desktop-v1-2-0}
+## Desktop 1.2.0 — tvrstsp {#desktop-v1-2-0}
 
 Tagged 2026-05-28. A tag only, with no GitHub release and no installers.
 
-### Before 1.2.0 {#desktop-before-1-2-0}
+## Desktop: Before 1.2.0 {#desktop-before-1-2-0}
 
 Versions 1.0.0 and 1.1.0-aries exist only as untagged commits from 2026-05-28, with no releases, so they are not listed here.
 
@@ -365,7 +365,7 @@ Versions 1.0.0 and 1.1.0-aries exist only as untagged commits from 2026-05-28, w
 
 The extension is not published on the Chrome Web Store or as its own GitHub release. Each desktop release bundles one extension version; versions that were never bundled in a release are not listed.
 
-### Latest {#extension-latest}
+## Extension: Latest {#extension-latest}
 
 | Version | Bundled with desktop |
 | ------- | -------------------- |
@@ -375,21 +375,21 @@ The extension is not published on the Chrome Web Store or as its own GitHub rele
 **Download ZIP**, the only way the desktop app hands out the extension, does nothing in installed builds. See [CointMU-App#103](https://github.com/Cointmu-ORG/CointMU-App/issues/103) and [Getting the Extension](/docs/app/extension#getting-the-extension).
 :::
 
-### Breaking Changes and Removals {#extension-breaking}
+## Extension: Breaking Changes and Removals {#extension-breaking}
 
 | Version | Change                                                                                                             | What to do                                                                               |
 | ------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
 | 1.0.17  | In linked (desktop) mode, websites can no longer sign or send transactions; the extension refuses. *(source-only)* | Use standalone mode to sign. See [Standalone Mode](/docs/app/extension#standalone-mode). |
 | 1.0.17  | Desktop 1.6.17 and newer accept the extension only after you approve it once (pairing). *(source-only)*            | Choose **Link to Desktop App** and approve the request in the desktop app.               |
 
-### Requirements {#extension-requirements}
+## Extension: Requirements {#extension-requirements}
 
 | From   | Requirement                                                                                                                                               |
 | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1.0.11 | Standalone mode needs no desktop app: an imported private key and a network you add.                                                                      |
 | 1.0.1  | A Chrome or Chromium browser that loads Manifest V3 extensions unpacked (developer mode). Linked mode needs the desktop app running on the same computer. |
 
-### 1.0.17 {#extension-v1-0-17}
+## Extension 1.0.17 {#extension-v1-0-17}
 
 Bundled with desktop 1.6.17 to 1.7.4.
 
@@ -401,7 +401,7 @@ Bundled with desktop 1.6.17 to 1.7.4.
 
 The stored keys in standalone mode are not encrypted ([CointMU-App#107](https://github.com/Cointmu-ORG/CointMU-App/issues/107)), and the background sends them to any part of the extension that asks ([CointMU-App#109](https://github.com/Cointmu-ORG/CointMU-App/issues/109)). Both are open in 1.0.17.
 
-### 1.0.14 {#extension-v1-0-14}
+## Extension 1.0.14 {#extension-v1-0-14}
 
 Bundled with desktop 1.6.12 to 1.6.16.
 
@@ -409,13 +409,13 @@ Bundled with desktop 1.6.12 to 1.6.16.
 - **Changed** a network whose RPC does not answer shows as offline instead of an error. *(source-only)*
 - **Changed** an RPC URL of `http://localhost` without a port is sent to port 8545. The desktop node listens on 8585, so enter `http://127.0.0.1:8585` instead ([CointMU-App#105](https://github.com/Cointmu-ORG/CointMU-App/issues/105)). *(source-only)*
 
-### 1.0.11 {#extension-v1-0-11}
+## Extension 1.0.11 {#extension-v1-0-11}
 
 Bundled with desktop 1.6.10 and 1.6.11.
 
 - **Added** standalone mode: import a private key, add your own networks, and sign in the extension, with an approval window for each request. *(source-only)*
 
-### 1.0.1 {#extension-v1-0-1}
+## Extension 1.0.1 {#extension-v1-0-1}
 
 Bundled with desktop 1.6.4 to 1.6.9.
 
