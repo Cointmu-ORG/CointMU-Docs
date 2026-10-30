@@ -65,6 +65,8 @@ export default defineConfig({
           { text: "Mining & Miner Distribution", link: "/docs/app/mining" },
           { text: "Blockchain Explorer", link: "/docs/app/explorer" },
           { text: "Self-Healing Embedded Node", link: "/docs/app/node" },
+          { text: "Settings", link: "/docs/app/settings" },
+          { text: "Browser Extension", link: "/docs/app/extension" },
         ],
       },
     ],
