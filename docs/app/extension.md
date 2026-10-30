@@ -37,7 +37,7 @@ Choose **Add Wallet → Import Private Key** to use the extension without the de
 To use the desktop app's node in standalone mode, add a network with the RPC URL `http://127.0.0.1:8585` and chain ID `1912`. Do not enter `http://localhost`: the extension turns that into `http://127.0.0.1:8545`, where the node is not listening ([CointMU-App#105](https://github.com/Cointmu-ORG/CointMU-App/issues/105)).
 
 ::: warning
-In standalone mode the imported private key is stored unencrypted in the browser's extension storage. Anyone with access to your browser profile can read it. Use a key that holds only small amounts.
+In standalone mode the imported private key is stored unencrypted in the browser's extension storage, and the extension has no password or lock. Anyone with access to your browser profile can read it. Use a key that holds only small amounts. See [CointMU-App#107](https://github.com/Cointmu-ORG/CointMU-App/issues/107).
 :::
 
 ## Connecting a Website
