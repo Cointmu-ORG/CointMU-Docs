@@ -1,40 +1,53 @@
 # CointMU App Overview
 
-CointMU is a comprehensive, decentralized desktop application that provides a unified interface for interacting with a custom Proof-of-Work blockchain network. Unlike traditional Web3 clients that rely on external RPC providers, CointMU ships with an embedded Geth node that runs entirely on the user's machine — making it a fully self-contained blockchain environment with no external dependencies.
+CointMU is a desktop application that provides a unified interface for interacting with a custom Proof-of-Work blockchain network. Instead of relying on an external RPC provider, CointMU ships with an embedded Geth node that runs on the user's machine. The node finds its peers through the CointMU bootnode on the campus network, so off campus it needs the VPN. See [Network Access](/docs/app/installation#network-access).
+
+::: info Version numbers
+The desktop app and the [CointMU CLI](/docs/cli/overview) are versioned separately, and their version numbers are unrelated: desktop 1.7.x and CLI 1.7.x are different releases with different codenames. The app shows its version in **Settings → About**.
+:::
 
 ## Core Features
 
 ### Embedded Geth Node
 
-CointMU runs a background Proof-of-Work node tightly integrated with the Electron Main process. The node lifecycle — startup, shutdown, and crash recovery — is managed automatically without requiring any manual configuration from the user.
+CointMU runs a background Proof-of-Work node managed by the Electron Main process. Startup, shutdown, and recovery after a crash are handled by the app, with no manual configuration. On macOS the node does not start today ([CointMU-App#102](https://github.com/Cointmu-ORG/CointMU-App/issues/102)).
 
-### Self-Healing Architecture
+### Self-Healing Node
 
-The application continuously monitors the health of the underlying LevelDB database. If corruption is detected, CointMU automatically re-initializes the node and restores a clean state without user intervention, eliminating the need for manual database repair or chain resyncs.
+When the node's chain database is damaged, CointMU restarts the node up to three times. If that does not help, it moves the damaged chain data aside as a backup and resyncs from the network. It does this at most once per session; after that it stops and asks you to retry. Your wallet keys are never touched. See [Self-Healing Embedded Node](/docs/app/node#self-healing).
 
 ### Multi-Asset Wallet
 
-The built-in wallet supports both native coins and custom ERC-20 tokens. State is persisted using Zustand Persist, enabling instant loading on application startup and eliminating layout shifts during wallet hydration.
+The built-in wallet holds native CMU and ERC-20 tokens, and lists ERC-721 and ERC-1155 NFTs. Accounts come from a 12-word recovery phrase or an imported key, and are stored encrypted with your password. See [Wallet](/docs/app/wallet).
 
 ### Integrated Mining
 
-CointMU includes a first-class mining interface with fine-grained control over the mining process:
+CointMU includes a mining interface for the local CPU miner:
 
-| Control            | Description                                                          |
-| ------------------ | -------------------------------------------------------------------- |
-| Worker threads     | Configure the number of concurrent mining threads.                   |
-| Intensity presets  | Choose between `Eco`, `Balanced`, and `Turbo` intensity modes.       |
-| Block distribution | View real-time stats on mined block distribution across the network. |
+| Control            | Description                                                                                                                                           |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Worker threads     | Number of CPU threads the miner uses, set in Settings → Mining.                                                                                       |
+| Intensity presets  | `Eco`, `Balanced` and `Turbo` are shown and saved, but have no effect yet ([CointMU-App#104](https://github.com/Cointmu-ORG/CointMU-App/issues/104)). |
+| Pause on battery   | Stops the miner while a laptop runs on battery, and resumes it on AC power.                                                                           |
+| Miner distribution | Share of blocks mined by each address over the past 24 hours, on the Explorer page.                                                                   |
 
 ### Real-Time Dashboard
 
-The dashboard aggregates live network data through efficient background polling:
+The dashboard aggregates live network data through background polling:
 
 - Network hashrate across all active miners.
-- Smart contract deployment activity on the chain.
-- Paginated transaction history with low-latency updates.
+- Smart contracts deployed from your address.
+- Paginated transaction history for your wallets, with CSV export.
 
 All data is fetched in the background to keep the UI responsive at all times.
+
+### Browser Extension
+
+A companion Chrome extension connects dApps to the desktop wallet. It is bundled with the app; see [Browser Extension](/docs/app/extension).
+
+### Settings, Updates and Error Reports
+
+The app updates itself from GitHub Releases, sends sanitized error reports unless you turn them off, and offers 7 interface languages. See [Settings](/docs/app/settings).
 
 ## Architecture Overview
 
@@ -64,9 +77,9 @@ CointMU is structured around three tightly coupled layers:
 
 ## Key Design Principles
 
-| Principle                | Implementation                                                                       |
-| ------------------------ | ------------------------------------------------------------------------------------ |
-| Zero external dependency | All blockchain operations run locally with no reliance on third-party RPC providers. |
-| Resilient by default     | Self-healing node management ensures uptime without manual intervention.             |
-| Performance-first UI     | Zustand Persist and background polling keep the interface fast and shift-free.       |
-| Developer-accessible     | The embedded JSON-RPC API is compatible with standard Ethereum tooling.              |
+| Principle            | Implementation                                                                                                                      |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| No third-party RPC   | Blockchain operations run against the local node. Only peer discovery needs the campus network or VPN.                              |
+| Recovers on its own  | The node is restarted, and damaged chain data rebuilt, without user action, once per session. After that the app asks you to retry. |
+| Performance-first UI | Background polling keeps the interface current without blocking it.                                                                 |
+| Developer-accessible | The node's JSON-RPC API (`eth`, `net`, `web3`) listens on `127.0.0.1:8585` and works with standard Ethereum tooling.                |
