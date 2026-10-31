@@ -1,10 +1,35 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { defineConfig } from "vitepress";
+import { extractPageDescription } from "./page-description";
+import { buildPageSocialHead, buildSiteSocialHead, type SocialImage } from "./social-meta";
 
 /** Production origin, used for the sitemap and canonical URLs on every deployment. */
 const SITE_URL = "https://coint-mu-docs.vercel.app";
 
 /** Google Search Console HTML-tag ownership token for SITE_URL. */
 const GOOGLE_SITE_VERIFICATION = "tmOxFuuSKuzPsVNFFQUYsl0kyV5sa_agqPn50Y2KnWs";
+
+const SITE_TITLE = "CointMU Docs";
+
+/** Served from public/images/logo.png; also the favicon. */
+const SOCIAL_IMAGE: SocialImage = {
+  url: `${SITE_URL}/images/logo.png`,
+  width: 1597,
+  height: 1597,
+  alt: "CointMU logo",
+};
+
+/**
+ * Browser titles for pages whose H1 repeats across sections. Only <title> and
+ * og:/twitter:title change; the H1, its anchor, and the sidebar stay as written.
+ */
+const TITLE_OVERRIDES: Readonly<Record<string, string>> = {
+  "docs/app/changelog.md": "App Changelog",
+  "docs/app/installation.md": "App Installation",
+  "docs/cli/changelog.md": "CLI Changelog",
+  "docs/cli/installation.md": "CLI Installation",
+};
 
 /**
  * Maps a source path to its public URL path. `cleanUrls` is off (VitePress
@@ -20,7 +45,10 @@ function toUrlPath(relativePath: string): string {
  * for the core guides, CLI reference, and app documentation.
  */
 export default defineConfig({
-  title: "CointMU Docs",
+  title: SITE_TITLE,
+  // `true` renders ":title | CointMU Docs". Unlike an explicit ":title" template,
+  // it leaves the home page as plain "CointMU Docs" instead of repeating it.
+  titleTemplate: true,
   description: "The official documentation for the CointMU ecosystem.",
   head: [
     ["link", { rel: "icon", href: "/images/logo.png" }],
@@ -28,12 +56,26 @@ export default defineConfig({
       "meta",
       { name: "google-site-verification", content: GOOGLE_SITE_VERIFICATION },
     ],
+    ...buildSiteSocialHead(SITE_TITLE, SOCIAL_IMAGE),
   ],
+  lastUpdated: true,
   sitemap: { hostname: SITE_URL },
-  transformPageData(pageData) {
+  async transformPageData(pageData, { siteConfig }) {
     const canonicalUrl = `${SITE_URL}/${toUrlPath(pageData.relativePath)}`;
     pageData.frontmatter.head ??= [];
     pageData.frontmatter.head.push(["link", { rel: "canonical", href: canonicalUrl }]);
+
+    const source = await readFile(join(siteConfig.srcDir, pageData.relativePath), "utf8");
+    const description = extractPageDescription(source);
+    if (description) pageData.description = description;
+
+    const titleOverride = TITLE_OVERRIDES[pageData.relativePath];
+    if (titleOverride) pageData.title = titleOverride;
+  },
+  transformHead({ pageData, title, description }) {
+    if (pageData.isNotFound) return;
+    const url = `${SITE_URL}/${toUrlPath(pageData.relativePath)}`;
+    return buildPageSocialHead({ title, description, url });
   },
   themeConfig: {
     nav: [
