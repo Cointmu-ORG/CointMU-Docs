@@ -21,6 +21,17 @@ const SOCIAL_IMAGE: SocialImage = {
 };
 
 /**
+ * Browser titles for pages whose H1 repeats across sections. Only <title> and
+ * og:/twitter:title change; the H1, its anchor, and the sidebar stay as written.
+ */
+const TITLE_OVERRIDES: Readonly<Record<string, string>> = {
+  "docs/app/changelog.md": "App Changelog",
+  "docs/app/installation.md": "App Installation",
+  "docs/cli/changelog.md": "CLI Changelog",
+  "docs/cli/installation.md": "CLI Installation",
+};
+
+/**
  * Maps a source path to its public URL path. `cleanUrls` is off (VitePress
  * default and no Vercel rewrite), so pages are only served with `.html`.
  */
@@ -57,6 +68,9 @@ export default defineConfig({
     const source = await readFile(join(siteConfig.srcDir, pageData.relativePath), "utf8");
     const description = extractPageDescription(source);
     if (description) pageData.description = description;
+
+    const titleOverride = TITLE_OVERRIDES[pageData.relativePath];
+    if (titleOverride) pageData.title = titleOverride;
   },
   transformHead({ pageData, title, description }) {
     if (pageData.isNotFound) return;
