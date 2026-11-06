@@ -10,11 +10,15 @@ The header shows **Synced** while the app can reach the local node, or **Offline
 
 The wallet panel displays the active primary account connected to the local node.
 
-| Element        | Description                                                                                                                                                                                                |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Live Balance   | Current CMU balance fetched directly from the node (e.g., `9,076.06 CMU`).                                                                                                                                 |
-| Public Address | Truncated wallet address with a one-click copy function.                                                                                                                                                   |
-| Quick Actions  | Send, Receive, Stake, and Mining live buttons. None of them does anything yet ([CointMU-App#106](https://github.com/Cointmu-ORG/CointMU-App/issues/106)); use **Send** and **Receive** in the page header. |
+| Element        | Description                                                                                                                                                                 |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Live Balance   | Current CMU balance fetched directly from the node (e.g., `9,076.06 CMU`).                                                                                                  |
+| Public Address | Truncated wallet address with a one-click copy function.                                                                                                                    |
+| Quick Actions  | **Send** and **Receive** open the same dialogs as the header buttons, and **Mining live** opens the [Mining](/docs/app/mining) page. Up to 1.7.4 none of them did anything. |
+
+The **Stake** button was removed in 1.8.0: CointMU is a proof-of-work chain and has no staking.
+
+The eye button in the title bar turns **Privacy mode** on and off: balances and amounts then show as `••••`, here and on the other pages. See [Settings → Appearance](/docs/app/settings#appearance).
 
 ## Network Health
 

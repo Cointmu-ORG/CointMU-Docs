@@ -32,11 +32,20 @@ The `.deb` was extracted and run on Linux (x64) for these docs. The Windows and 
 
 ### Updates
 
-When it starts, an installed build checks GitHub Releases for a newer version. If it finds one, it downloads it in the background and restarts into it as soon as the download finishes. Prereleases are included. You can also check by hand in **Settings → About → Check for Updates**. The startup check was seen on Linux; the download and restart come from the source and were not exercised for these docs.
+When it starts, an installed build checks GitHub Releases for a newer version. If it finds one, it downloads it in the background. Prereleases are included. You can also check by hand in **Settings → About → Check for Updates**, and turn the startup check off under **Settings → General → Updates**.
+
+What happens once the download is done depends on the version you are running:
+
+| Running         | After the download                                                                                                                                                                                                          |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.8.0           | **Install when I quit** (default): nothing is shown; the update installs when you quit, after the node has stopped, and CointMU does not restart. **Ask me**: an *Update ready* prompt offers **Restart now** or **Later**. |
+| 1.7.4 and older | CointMU restarts into the new version as soon as the download finishes. An update from 1.7.4 to 1.8.0 is installed this way.                                                                                                |
+
+The node always shuts down cleanly before an update installs. The startup check was seen on Linux (1.8.0 found no newer release); the download and install come from the source and were not exercised for these docs.
 
 ## Network Access
 
-The node finds peers through the CointMU bootnode on the campus network. Off campus, connect through the VPN. Without it the node starts but stays at 0 peers, and the Mining page says *Bootnode unreachable — make sure you are connected to the campus network or VPN.* The active bootnode is listed under [Settings → Network](/docs/app/settings#network).
+The node finds peers through the three CointMU nodes on the campus network (10.64.24.101, 10.64.24.106 and 10.64.24.113 since 1.8.0; only the first before). Off campus, connect through the VPN. Without it the node starts but stays at 0 peers, and the Mining page says *Bootnode unreachable — make sure you are connected to the campus network or VPN.* The nodes and whether each can be reached are listed under [Settings → Network](/docs/app/settings#network).
 
 ## Where Data Is Stored
 
@@ -48,12 +57,15 @@ CointMU keeps everything in its user data folder (`<userData>`):
 | Windows  | `%APPDATA%\CointMU`                     |
 | macOS    | `~/Library/Application Support/CointMU` |
 
-| What                                                        | Where                               |
-| ----------------------------------------------------------- | ----------------------------------- |
-| Chain data                                                  | `<userData>/cointmu-chaindata/1912` |
-| Settings and wallet (accounts encrypted with your password) | `<userData>/config.json`            |
-| Logs (`main.log`, `geth.log`)                               | `<userData>/logs/`                  |
-| Error reports waiting to be sent                            | `<userData>/telemetry-queue/`       |
+| What                                                        | Where                                                                                     |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Chain data                                                  | `<userData>/cointmu-chaindata/1912`, or the folder you moved it to (see below)            |
+| Settings and wallet (accounts encrypted with your password) | `<userData>/config.json`                                                                  |
+| Logs (`main.log`, `geth.log`)                               | `<userData>/logs/`                                                                        |
+| Block index for the Explorer's miner chart (since 1.8.0)    | `<userData>/explorer-index/1912`                                                          |
+| Error reports waiting to be sent                            | `<userData>/telemetry-queue/`                                                             |
+
+Since 1.8.0, **Settings → General → Chain data location → Move…** copies the chain data to another folder, for example on a larger drive; see [Moving the Chain Data](/docs/app/settings#moving-the-chain-data). The block index, settings, wallet and logs stay in `<userData>`.
 
 The Linux paths were checked on a running build. The Windows and macOS folders are Electron's defaults for an app named `CointMU`, and were not checked on those systems.
 
@@ -109,6 +121,8 @@ The `geth` binaries are committed to the repository under `resources/bin/linux/`
 
 ::: details How the Node.js and npm versions were checked
 On the `main` branch (1.7.4) on Linux: with Node.js 22.23.2 and its bundled npm 10.9.9, `npm ci` stops with `EBADDEVENGINES`. With Node.js 22.23.2 and npm 12.2.0, from Corepack or installed directly, `npm ci` and `npm run build` succeed after one `devEngines.runtime` warning, and all tests pass. Corepack resolves npm 12.2.0 under Node.js 22.23.2 and 24.x. The 22.22.2 lower bound is npm 12's own `engines` range, and was not run.
+
+1.8.0 declares the same Node.js and npm versions (`.nvmrc`, `devEngines`, `packageManager` and `native/geth-supervisor/go.mod` are unchanged since 1.7.4, and the bundled `geth` binaries are identical), so these checks were not repeated for it. Its Electron is 45.0.0, installed by `npm install` like any other dependency.
 :::
 
 ## Building Distributables

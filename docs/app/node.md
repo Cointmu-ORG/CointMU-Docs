@@ -27,13 +27,13 @@ React Renderer (via IPC Bridge)
 
 ## Node Lifecycle
 
-| Phase    | Behavior                                                                                                                                              |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Startup  | Geth is spawned automatically when the application launches. On first start, the chain is initialized from the built-in genesis block.                |
-| Running  | The node syncs with the CointMU network and serves JSON-RPC requests.                                                                                 |
-| Shutdown | Geth is asked to stop cleanly when the application closes.                                                                                            |
-| Crash    | After an unexpected exit the node is restarted. More than 5 unrecognized crashes within 10 minutes stops the restarts, and the app asks you to retry. |
-| Blocked  | If Geth cannot start because of a port or lock conflict, it is not restarted. The app shows the cause and a **Retry** button (see below).             |
+| Phase    | Behavior                                                                                                                                                                                                  |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Startup  | Geth is spawned automatically when the application launches. On first start, the chain is initialized from the built-in genesis block. With **Low priority** on, it runs at below-normal CPU priority.    |
+| Running  | The node syncs with the CointMU network and serves JSON-RPC requests.                                                                                                                                     |
+| Shutdown | Geth is asked to stop cleanly when the application closes. Since 1.8.0 a quit while the node mines or syncs asks first, unless you turned that off; see [Settings → General](/docs/app/settings#general). |
+| Crash    | After an unexpected exit the node is restarted. More than 5 unrecognized crashes within 10 minutes stops the restarts, and the app asks you to retry.                                                     |
+| Blocked  | If Geth cannot start because of a port or lock conflict, it is not restarted. The app shows the cause and a **Retry** button (see below).                                                                 |
 
 ## Self-Healing
 
@@ -54,26 +54,26 @@ Moving the chain data aside means a full chain resync from the network, which ne
 
 The embedded node connects to the CointMU network using the following defaults:
 
-| Parameter  | Value                                                                                                                                  |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Network    | CointMU Mainnet                                                                                                                        |
-| Chain ID   | `1912`                                                                                                                                 |
-| RPC URL    | `http://127.0.0.1:8585`, or the next free port if 8585 is taken                                                                        |
-| RPC APIs   | `eth`, `net`, `web3`                                                                                                                   |
-| P2P port   | `30303` (TCP and UDP), or the next free port if 30303 is taken. Shown, read-only, in [Settings → Network](/docs/app/settings#network). |
-| Consensus  | Proof of Work (PoW)                                                                                                                    |
-| Block Time | ~30 seconds                                                                                                                            |
-| Data       | `<userData>/cointmu-chaindata/1912` (see [Where Data Is Stored](/docs/app/installation#where-data-is-stored))                          |
+| Parameter  | Value                                                                                                                                              |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Network    | CointMU Mainnet                                                                                                                                    |
+| Chain ID   | `1912`                                                                                                                                             |
+| RPC URL    | `http://127.0.0.1:8585`, or the next free port if 8585 is taken                                                                                    |
+| RPC APIs   | `eth`, `net`, `web3`                                                                                                                               |
+| P2P port   | `30303` (TCP and UDP), or the next free port if 30303 is taken. Since 1.8.0 you can change it in [Settings → Network](/docs/app/settings#network). |
+| Consensus  | Proof of Work (PoW)                                                                                                                                |
+| Block Time | ~30 seconds                                                                                                                                        |
+| Data       | `<userData>/cointmu-chaindata/1912`, unless moved in Settings → General (see [Where Data Is Stored](/docs/app/installation#where-data-is-stored))  |
 
-These values are bundled with the application and do not require manual configuration. The node also opens Geth's engine API on `127.0.0.1:8551` (or the next free port).
+These values are bundled with the application and do not require manual configuration. The node also opens Geth's engine API on `127.0.0.1:8551` (or the next free port). Max peers (`--maxpeers`, default 14), the listen port and the log level (`--verbosity`, Info or Debug) come from [Settings](/docs/app/settings#network); saving any of them restarts the node.
 
-::: warning RPC port in Settings
-Settings → Advanced says the node listens on `127.0.0.1:8545`, and offers WebSocket RPC on `8546`. Both are wrong: HTTP RPC is on `8585`, and there is no WebSocket endpoint. See [CointMU-App#105](https://github.com/Cointmu-ORG/CointMU-App/issues/105).
-:::
+Since 1.8.0, Settings → Advanced shows the HTTP RPC port the node really uses. Up to 1.7.4 it said `127.0.0.1:8545` and offered WebSocket RPC on `8546`; both were wrong ([CointMU-App#105](https://github.com/Cointmu-ORG/CointMU-App/issues/105), fixed). There is no WebSocket endpoint.
 
 ## Bootnodes
 
-The node finds peers through a bootnode on the campus network. The active bootnodes are listed in [Settings → Network → Bootnodes](/docs/app/settings#bootnodes), where you can also enter your own (up to 10). Saving restarts the node.
+The node connects to three CointMU nodes on the campus network, 10.64.24.101, 10.64.24.106 and 10.64.24.113. It keeps a connection to each one that is on and also uses them as bootnodes to find more peers, so one node going down does not cut you off. Up to 1.7.4 only 10.64.24.101 was built in. The nodes, with their status, are listed in [Settings → Network → CointMU Nodes](/docs/app/settings#bootnodes), where you can also add your own (up to 10 in all) and switch the built-in ones off.
+
+On the Linux 1.8.0 build the node was started with all three nodes in `--bootnodes` and was peered with each of them.
 
 ## Troubleshooting
 
@@ -83,8 +83,8 @@ When the node cannot start, or has no peers, the Mining page shows a hint:
 | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | *Bootnode unreachable — make sure you are connected to the campus network or VPN.* | Connect to the campus network or VPN.                                                                                                                                                                                                         |
 | *The bootnode is reachable, but no peers have connected.*                          | The network ID or bootnode may not match the network, or UDP discovery may be blocked. If it persists, report an issue with the logs.                                                                                                         |
-| *Another program is using the node's network port.*                                | Close that program, then click **Retry**. The hint also suggests changing the Listen port in Settings → Network, but that field cannot be edited ([CointMU-App#106](https://github.com/Cointmu-ORG/CointMU-App/issues/106)).                  |
-| *Windows has reserved port …*                                                      | Hyper-V and WSL reserve port ranges on Windows. Restart CointMU so it picks other ports, then click **Retry**. The Listen port the hint mentions cannot be edited ([CointMU-App#106](https://github.com/Cointmu-ORG/CointMU-App/issues/106)). |
+| *Another program is using the node's network port.*                                | Close that program, then click **Retry**, or change the Listen port in [Settings → Network](/docs/app/settings#network). Up to 1.7.4 that field could not be edited.                                                                          |
+| *Windows has reserved port …*                                                      | Hyper-V and WSL reserve port ranges on Windows. Restart CointMU so it picks other ports, then click **Retry**, or set another Listen port in Settings → Network.                                                                              |
 | *Windows denied the node access to its IPC pipe or data files*                     | A `geth.exe` from an earlier session is still running. End it in Task Manager (Details tab) or restart the computer, then click **Retry**.                                                                                                    |
 | *The node database is in use by another process*                                   | Another CointMU or Geth instance is using the data folder. Close it, then click **Retry**.                                                                                                                                                    |
 | *Automatic recovery stopped. The node needs your attention.*                       | Click **Retry**, or restart the app. If it keeps failing, report an issue and attach the logs (Settings → Privacy & Diagnostics → **Copy recent logs**).                                                                                      |

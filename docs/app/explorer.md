@@ -8,17 +8,16 @@ The Explorer provides a real-time, transparent view of every block, transaction,
 
 The search bar at the top of the page is the primary navigation tool for querying on-chain data.
 
-| Input Type       | Description                                                                                                                                      |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Address          | Query the balance and transaction history of any wallet address (`0x` and 40 hex characters).                                                    |
-| Transaction Hash | Look up a specific transaction, or a block, by its hash (`0x` and 64 hex characters).                                                            |
-| Block Number     | Navigate directly to a block by its height.                                                                                                      |
-| username.cmu     | Offered in the placeholder, but not supported: the search is ignored ([CointMU-App#106](https://github.com/Cointmu-ORG/CointMU-App/issues/106)). |
+| Input Type       | Description                                                                                   |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| Address          | Query the balance and transaction history of any wallet address (`0x` and 40 hex characters). |
+| Transaction Hash | Look up a specific transaction, or a block, by its hash (`0x` and 64 hex characters).         |
+| Block Number     | Navigate directly to a block by its height.                                                   |
 
-Any other input is ignored without a message.
+Any other input is ignored without a message. Up to 1.7.4 the placeholder also offered `username.cmu`, which was never supported; since 1.8.0 it reads *0x... address, transaction hash, or block number*.
 
 ::: tip
-Use `Ctrl+K` (`Cmd+K` on macOS, not tested there) to focus the search bar while the Explorer is open. The **Saved searches** button in the top-right corner does nothing yet ([CointMU-App#106](https://github.com/Cointmu-ORG/CointMU-App/issues/106)).
+Use `Ctrl+K` (`Cmd+K` on macOS, not tested there) to focus the search bar while the Explorer is open. The **Saved searches** button, which did nothing, was removed in 1.8.0.
 :::
 
 ## Network Telemetry
@@ -67,6 +66,19 @@ Selecting a block, transaction, or address (or searching for one) opens its deta
 
 ## Miner Distribution
 
-The Miner Distribution panel displays the share of blocks mined by each network participant over the past 24 hours.
+The Miner Distribution panel displays the share of blocks mined by each address. Since 1.8.0 you choose the range: **Week** (the past 7 days, the default), **Month** (the past 30 days) or **All time**. Up to 1.7.4 it always covered the past 24 hours.
 
-This chart is useful for monitoring network decentralization and identifying dominant mining addresses on the private chain. It refreshes once a minute.
+This chart is useful for monitoring network decentralization and identifying dominant mining addresses on the private chain.
+
+The chart reads a local block index, not the node directly. CointMU keeps the number, hash, parent, time and miner of every block in `<userData>/explorer-index/<chain ID>` (see [Where Data Is Stored](/docs/app/installation#where-data-is-stored)). The index starts at the newest block, follows new ones, and fills in older blocks back to the first one in the background, pausing while the node syncs. The panel reads it every 5 seconds.
+
+| Message                                               | Meaning                                                                      |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------- |
+| *Indexing blocks · N% · partial data*                 | The index has not reached the start of the range yet; the chart is partial.  |
+| *No blocks indexed in this range yet*                 | Nothing in the range is indexed yet.                                         |
+| *Node unreachable · showing blocks indexed up to #N*  | The node does not answer; the chart keeps what was indexed.                  |
+| *Block index unavailable*                             | The index cannot be read.                                                    |
+
+If the chart looks wrong, **Settings → General → Explorer cache → Reset…** deletes the index and rebuilds it from your node in the background. Your wallet and chain data are not touched; see [Settings → General](/docs/app/settings#general).
+
+The range buttons, the indexing message and the reset were seen on the Linux 1.8.0 build. The other messages come from the source.
