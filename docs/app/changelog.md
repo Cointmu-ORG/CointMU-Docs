@@ -41,14 +41,15 @@ Each change below was checked against the app source at that version's tag. Chan
 
 | Version | Codename | Released   |
 | ------- | -------- | ---------- |
-| 1.7.4   | Obsidian | 2026-10-30 |
+| 1.8.0   | Orion    | 2026-11-05 |
 
-Installed apps download new releases from GitHub on their own and install them on restart; see [Updates](/docs/app/installation#updates). To install from scratch, see [Install a Release](/docs/app/installation#install-a-release).
+Installed apps download new releases from GitHub on their own. 1.7.4 and older restart into the new version right away; from 1.8.0 the update installs when you quit, or after you confirm. See [Updates](/docs/app/installation#updates). To install from scratch, see [Install a Release](/docs/app/installation#install-a-release).
 
-::: danger Known issues in every release
-- **macOS:** the node never starts, because the macOS builds do not include `geth` where the app looks for it. Every macOS release since 1.5.3 is affected. See [CointMU-App#102](https://github.com/Cointmu-ORG/CointMU-App/issues/102).
-- **Browser extension:** **Settings → External Sources → Download ZIP** does nothing in installed builds, on every release since 1.6.4. See [CointMU-App#103](https://github.com/Cointmu-ORG/CointMU-App/issues/103).
+::: danger Known issue in every release
+**macOS:** the node never starts, because the macOS builds do not include `geth` where the app looks for it. Every macOS release since 1.5.3 is affected. See [CointMU-App#102](https://github.com/Cointmu-ORG/CointMU-App/issues/102).
 :::
+
+**Settings → External Sources → Download ZIP**, which did nothing in installed builds from 1.6.4 to 1.7.4, works again in 1.8.0 ([CointMU-App#103](https://github.com/Cointmu-ORG/CointMU-App/issues/103)).
 
 This table is updated by hand with each release. To see the newest release right now, run `gh release view --repo Cointmu-ORG/CointMU-App` or open the [releases page](https://github.com/Cointmu-ORG/CointMU-App/releases); to see what you have installed, open **Settings → About**.
 
@@ -56,6 +57,9 @@ This table is updated by hand with each release. To see the newest release right
 
 | Version | Change                                                                                                                                                                                              | What to do                                                                                                                                                                   |
 | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.8.0   | Every send asks for the wallet password (**Ask for password to send**, on by default, also for existing installs). *(source-only for existing installs)*                                            | Type the password in the Send dialog, or turn the option off in [Settings → Security](/docs/app/settings#security).                                                          |
+| 1.8.0   | Options that never had an effect are hidden: Default currency, Sync mode, Prune old state, Discovery, WebSocket RPC, CORS origins, Intensity, Security events, biometric signing.                   | Nothing. A stored Log level of Warning or Error now runs at Info.                                                                                                            |
+| 1.8.0   | **Stake**, **Swap**, the Watch List, **Saved searches** and the peers **View list** removed, and the Explorer no longer offers `username.cmu`. None of them did anything.                           | Nothing.                                                                                                                                                                     |
 | 1.7.3   | Network selection removed: custom networks (**Add Network**), the RPC endpoint field and editing the chain ID. **Settings → Network** shows CointMU Mainnet, read-only.                             | Nothing; the app only connects to CointMU Mainnet.                                                                                                                           |
 | 1.7.0   | The mining **Mode** setting (solo or pool) removed from **Settings → Mining**. It had no effect.                                                                                                    | Nothing.                                                                                                                                                                     |
 | 1.6.18  | The network moved to a new bootnode. 1.6.17 and older still look for the old one and find no peers: run for two minutes, 1.6.17 had 0 peers and 1.6.18 had 5.                                       | Update to 1.6.18 or newer.                                                                                                                                                   |
@@ -72,6 +76,7 @@ Every release from 1.5.0 on bundles the same Geth 1.10.26 build for Linux and Wi
 
 | Version                    | Released         | Platforms                             | Electron               | Extension              | Ran on Linux                             |
 | -------------------------- | ---------------- | ------------------------------------- | ---------------------- | ---------------------- | ---------------------------------------- |
+| [1.8.0](#desktop-v1-8-0)   | 2026-11-05       | Windows, macOS (Apple silicon), Linux | 45.0.0                 | 1.0.18                 | Node runs, finds peers                   |
 | [1.7.4](#desktop-v1-7-4)   | 2026-10-30       | Windows, macOS (Apple silicon), Linux | 44.9.1                 | 1.0.17                 | Node runs, finds peers                   |
 | [1.7.3](#desktop-v1-7-3)   | 2026-10-29       | Windows, macOS (Apple silicon), Linux | 44.9.1                 | 1.0.17                 | Node runs                                |
 | [1.7.2](#desktop-v1-7-2)   | 2026-10-29       | Windows, macOS (Apple silicon), Linux | 44.9.1                 | 1.0.17                 | Node runs                                |
@@ -116,6 +121,63 @@ In these releases the bundled Linux `geth` is not marked executable, so the node
 | 1.7.4  | Building the Windows installer also needs Go, for the helper that stops geth cleanly on Windows. *(source-only)*                                                                        |
 | 1.6.17 | Node.js 24.15 or newer (`.nvmrc` pins 24); Node.js 22.22.2 or newer works with a warning. npm 12.2 or newer, through Corepack. See [Requirements](/docs/app/installation#requirements). |
 | 1.2.0  | No Node.js or npm version is declared.                                                                                                                                                  |
+
+## Desktop 1.8.0 — Orion {#desktop-v1-8-0}
+
+Released 2026-11-05.
+
+**Mining**
+
+- **Added** **Mine only when idle** and **Mine on a schedule** in **Settings → Mining**. Mining you started pauses while you use the computer or outside the hours you set, and the Mining header says `Paused: you are active` or `Paused: outside schedule`. See [When Mining Runs](/docs/app/mining#when-mining-runs). Pausing and resuming *(source-only)*.
+- **Added** **Low priority** runs the node at below-normal CPU priority. *(source-only)*
+- **Added** **Start mining at launch** works: 30 seconds after the node is ready, with a countdown and **Cancel**. Off by default; a value stored by older versions is not used. See [Start Mining at Launch](/docs/app/mining#start-mining-at-launch). *(source-only)*
+- **Changed** the *Block mined* notification is sent on every page, not only while the Mining page is open. *(source-only)*
+- **Changed** **Enable Mining** in Settings only allows mining; switching it on no longer starts the miner. *(source-only)*
+- **Removed** the **Intensity** option and its row on the Mining page. It never had an effect.
+
+**Wallet and security**
+
+- **Added** **Ask for password to send**, on by default: the Send dialog has a **Wallet password** field, checked on this computer and never stored.
+- **Added** **Clear copied addresses and keys**: a copied address, private key or recovery phrase is cleared from the clipboard after 30 seconds by default. Clearing *(source-only)*.
+- **Changed** **Auto-lock wallet** is a choice of Never, 5, 15, 30 or 60 minutes, 15 on a new install. The wallet now also locks while mining, and locking forgets the password kept in memory. Existing installs keep 5 minutes, or Never if auto-lock was off. *(The mapping is source-only.)*
+- **Changed** the Wallet header shows *Synced* or *Offline* from the node's state, and **Backup** opens Settings → Security ([CointMU-App#106](https://github.com/Cointmu-ORG/CointMU-App/issues/106)).
+- **Changed** Ledger and Trezor are disabled and marked **Coming soon**.
+
+**Window, data and updates**
+
+- **Added** **Close button: Quit or Hide to tray**, with a tray menu for opening the window, starting and stopping mining, and quitting. Shown only where a tray is possible; not on macOS, and on Linux only with a tray host. *(source-only)*
+- **Added** **Ask before quitting** while the node mines or syncs, on by default.
+- **Added** **Chain data location** with **Move…**, to copy the chain data to another folder. See [Moving the Chain Data](/docs/app/settings#moving-the-chain-data). Moving *(source-only)*.
+- **Added** **Logs → Open folder**, **Diagnostic bundle → Export…** (a sanitized ZIP for bug reports, *source-only*) and **Explorer cache → Reset…** in **Settings → General → Troubleshooting**.
+- **Changed** updates no longer restart the app as soon as they are downloaded. They install when you quit (default), or **Ask me** shows *Update ready* with **Restart now**. The startup check can be turned off. See [Updates](/docs/app/installation#updates). *(source-only)*
+- **Changed** **Launch CointMU at login** (Windows, macOS) and **Open in background** (Windows) take effect, and are hidden on Linux. *(source-only)*
+
+**Appearance**
+
+- **Added** **Zoom** (90 to 125 percent), **Time format**, **Balance decimals** and **Privacy mode**, which shows `••••` instead of your balances; the eye button in the title bar toggles it.
+- **Added** **Colored sidebar icons**, off by default.
+- **Changed** **Density** and **Animated transitions** take effect; Animated transitions is Automatic, On or Off and follows the system's reduced-motion setting by default.
+
+**Network and node**
+
+- **Changed** the node connects to three CointMU nodes, 10.64.24.101, 10.64.24.106 and 10.64.24.113, and keeps reconnecting to each. **Settings → Network → CointMU nodes** shows whether each is reachable and peered, and lets you add your own and switch the built-in ones off. See [CointMU Nodes](/docs/app/settings#bootnodes).
+- **Changed** **Max peers**, **Listen port** and **Log level** (Info or Debug) take effect, and saving them restarts the node. Listen port can be edited ([CointMU-App#104](https://github.com/Cointmu-ORG/CointMU-App/issues/104), [CointMU-App#106](https://github.com/Cointmu-ORG/CointMU-App/issues/106)).
+- **Fixed** Settings → Advanced shows the HTTP RPC port the node really uses instead of `8545`, and no longer offers WebSocket RPC ([CointMU-App#105](https://github.com/Cointmu-ORG/CointMU-App/issues/105)).
+
+**Explorer and dashboard**
+
+- **Changed** **Miner distribution** covers a week, a month or all time instead of the past 24 hours. It reads a block index kept in `<userData>/explorer-index`, built in the background. See [Miner Distribution](/docs/app/explorer#miner-distribution).
+- **Fixed** the Dashboard's **Send**, **Receive** and **Mining live** buttons work ([CointMU-App#106](https://github.com/Cointmu-ORG/CointMU-App/issues/106)).
+- **Fixed** the welcome screen describes CointMU as a wallet, miner and explorer with its own node, instead of a "gasless, zero-storage WebRTC" client ([CointMU-App#108](https://github.com/Cointmu-ORG/CointMU-App/issues/108)).
+
+**Extension and building**
+
+- **Fixed** **Settings → External Sources → Download ZIP** finds the bundled ZIP in installed builds, and shows an error if saving fails ([CointMU-App#103](https://github.com/Cointmu-ORG/CointMU-App/issues/103)). The save dialog was not seen on the test system.
+- **Changed** bundles browser extension [1.0.18](#extension-v1-0-18), which encrypts its keys with a password.
+- **Changed** Electron 45.0.0 (was 44.9.1). Building needs the same Node.js, npm and Go as 1.7.4.
+- **Fixed** the Linux `.deb` builds from a git worktree or a source tarball, not only from a full clone. *(source-only)*
+
+Settings → General, Appearance, Network, Mining, Security and Advanced, the Wallet and Dashboard buttons, Privacy mode, the Explorer range buttons and **Explorer cache → Reset…** were checked on the Linux 1.8.0 build, whose node synced and peered with the network. Mining was never started.
 
 ## Desktop 1.7.4 — Obsidian {#desktop-v1-7-4}
 
@@ -369,18 +431,17 @@ The extension is not published on the Chrome Web Store or as its own GitHub rele
 
 | Version | Bundled with desktop |
 | ------- | -------------------- |
-| 1.0.17  | 1.6.17 to 1.7.4      |
+| 1.0.18  | 1.8.0                |
 
-::: danger
-**Download ZIP**, the only way the desktop app hands out the extension, does nothing in installed builds. See [CointMU-App#103](https://github.com/Cointmu-ORG/CointMU-App/issues/103) and [Getting the Extension](/docs/app/extension#getting-the-extension).
-:::
+**Download ZIP**, the only way the desktop app hands out the extension, did nothing in installed builds from desktop 1.6.4 to 1.7.4. It works again in desktop 1.8.0 ([CointMU-App#103](https://github.com/Cointmu-ORG/CointMU-App/issues/103)). See [Getting the Extension](/docs/app/extension#getting-the-extension).
 
 ## Extension: Breaking Changes and Removals {#extension-breaking}
 
-| Version | Change                                                                                                             | What to do                                                                               |
-| ------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| 1.0.17  | In linked (desktop) mode, websites can no longer sign or send transactions; the extension refuses. *(source-only)* | Use standalone mode to sign. See [Standalone Mode](/docs/app/extension#standalone-mode). |
-| 1.0.17  | Desktop 1.6.17 and newer accept the extension only after you approve it once (pairing). *(source-only)*            | Choose **Link to Desktop App** and approve the request in the desktop app.               |
+| Version | Change                                                                                                                                                               | What to do                                                                                                                 |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 1.0.18  | Standalone keys need a wallet password. Keys stored by 1.0.17 or older must be encrypted first; until then websites get no accounts and cannot sign. *(source-only)* | Open the popup and set a password under **Protect Your Keys**. See [Wallet Password](/docs/app/extension#wallet-password). |
+| 1.0.17  | In linked (desktop) mode, websites can no longer sign or send transactions; the extension refuses. *(source-only)*                                                   | Use standalone mode to sign. See [Standalone Mode](/docs/app/extension#standalone-mode).                                   |
+| 1.0.17  | Desktop 1.6.17 and newer accept the extension only after you approve it once (pairing). *(source-only)*                                                              | Choose **Link to Desktop App** and approve the request in the desktop app.                                                 |
 
 ## Extension: Requirements {#extension-requirements}
 
@@ -388,6 +449,18 @@ The extension is not published on the Chrome Web Store or as its own GitHub rele
 | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1.0.11 | Standalone mode needs no desktop app: an imported private key and a network you add.                                                                      |
 | 1.0.1  | A Chrome or Chromium browser that loads Manifest V3 extensions unpacked (developer mode). Linked mode needs the desktop app running on the same computer. |
+
+## Extension 1.0.18 {#extension-v1-0-18}
+
+Bundled with desktop 1.8.0. Read from the `extension.zip` inside the 1.8.0 Linux build.
+
+- **Added** a wallet password for standalone mode: imported keys are encrypted with it (PBKDF2-SHA-256, 600,000 iterations, AES-GCM-256), and the wallet locks after 15 idle minutes, when the browser closes, or with **Lock Wallet** ([CointMU-App#107](https://github.com/Cointmu-ORG/CointMU-App/issues/107)). *(source-only)*
+- **Added** keys stored in plain text by older versions are encrypted on first open, under **Protect Your Keys**; the plain-text copy is replaced only after the encrypted one checks out. *(source-only)*
+- **Fixed** the background answers wallet requests only from its own popup and approval windows, and no longer sends private keys to any part of the extension that asks ([CointMU-App#109](https://github.com/Cointmu-ORG/CointMU-App/issues/109)). *(source-only)*
+- **Fixed** an approval window whose request ID starts with a letter shows the request instead of the wallet, so the request can be approved. *(source-only)*
+- **Changed** the extension asks for the `alarms` permission, for the auto-lock. Chrome shows no install warning for it. *(source-only)*
+
+An `http://localhost` RPC URL is still sent to port 8545; see [Standalone Mode](/docs/app/extension#standalone-mode).
 
 ## Extension 1.0.17 {#extension-v1-0-17}
 
@@ -399,7 +472,7 @@ Bundled with desktop 1.6.17 to 1.7.4.
 - **Removed** signing in linked (desktop) mode. *(source-only)*
 - **Changed** from desktop 1.7.0, the popup is shown in the browser's language. The version number did not change. *(source-only)*
 
-The stored keys in standalone mode are not encrypted ([CointMU-App#107](https://github.com/Cointmu-ORG/CointMU-App/issues/107)), and the background sends them to any part of the extension that asks ([CointMU-App#109](https://github.com/Cointmu-ORG/CointMU-App/issues/109)). Both are open in 1.0.17.
+The stored keys in standalone mode are not encrypted ([CointMU-App#107](https://github.com/Cointmu-ORG/CointMU-App/issues/107)), and the background sends them to any part of the extension that asks ([CointMU-App#109](https://github.com/Cointmu-ORG/CointMU-App/issues/109)). Both are fixed in [1.0.18](#extension-v1-0-18).
 
 ## Extension 1.0.14 {#extension-v1-0-14}
 
@@ -423,4 +496,4 @@ Bundled with desktop 1.6.4 to 1.6.9.
 
 ## Codenames
 
-Every desktop release has a codename. Up to 1.6.8 it was part of the version number (1.6.8-Aphrodite); from 1.6.9 it is separate (1.6.9, codename Hecate). The extension has no codenames.
+Every desktop release has a codename. Up to 1.6.8 it was part of the version number (1.6.8-Aphrodite); from 1.6.9 it is separate (1.6.9, codename Hecate). The extension has no codenames. Desktop 1.8.0 "Orion" shares its codename with [CLI 1.4.0](/docs/cli/changelog#v1-4-0); they are unrelated releases.

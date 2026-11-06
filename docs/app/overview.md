@@ -1,6 +1,6 @@
 # CointMU App Overview
 
-CointMU is a desktop application that provides a unified interface for interacting with a custom Proof-of-Work blockchain network. Instead of relying on an external RPC provider, CointMU ships with an embedded Geth node that runs on the user's machine. The node finds its peers through the CointMU bootnode on the campus network, so off campus it needs the VPN. See [Network Access](/docs/app/installation#network-access).
+CointMU is a desktop application that provides a unified interface for interacting with a custom Proof-of-Work blockchain network. Instead of relying on an external RPC provider, CointMU ships with an embedded Geth node that runs on the user's machine. The node finds its peers through the three CointMU nodes on the campus network, so off campus it needs the VPN. See [Network Access](/docs/app/installation#network-access).
 
 ::: info Version numbers
 The desktop app and the [CointMU CLI](/docs/cli/overview) are versioned separately, and their version numbers are unrelated: desktop 1.7.x and CLI 1.7.x are different releases with different codenames. The app shows its version in **Settings → About**.
@@ -24,12 +24,16 @@ The built-in wallet holds native CMU and ERC-20 tokens, and lists ERC-721 and ER
 
 CointMU includes a mining interface for the local CPU miner:
 
-| Control            | Description                                                                                                                                           |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Worker threads     | Number of CPU threads the miner uses, set in Settings → Mining.                                                                                       |
-| Intensity presets  | `Eco`, `Balanced` and `Turbo` are shown and saved, but have no effect yet ([CointMU-App#104](https://github.com/Cointmu-ORG/CointMU-App/issues/104)). |
-| Pause on battery   | Stops the miner while a laptop runs on battery, and resumes it on AC power.                                                                           |
-| Miner distribution | Share of blocks mined by each address over the past 24 hours, on the Explorer page.                                                                   |
+| Control                | Description                                                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Worker threads         | Number of CPU threads the miner uses, set in Settings → Mining.                                                     |
+| Pause on battery       | Pauses the miner while a laptop runs on battery, and resumes it on AC power.                                        |
+| When to mine           | Mine only while the computer is idle, or only during set hours. Since 1.8.0.                                        |
+| Low priority           | Runs the node at below-normal CPU priority so other programs stay responsive. Since 1.8.0.                          |
+| Start mining at launch | Starts mining 30 seconds after the node is ready, with a chance to cancel. Off by default. Since 1.8.0.             |
+| Miner distribution     | Share of blocks mined by each address over the past week, month or all time, on the Explorer page.                  |
+
+See [Mining](/docs/app/mining#when-mining-runs). The Intensity presets were removed in 1.8.0; they never had an effect.
 
 ### Real-Time Dashboard
 
@@ -47,7 +51,7 @@ A companion Chrome extension connects dApps to the desktop wallet. It is bundled
 
 ### Settings, Updates and Error Reports
 
-The app updates itself from GitHub Releases, sends sanitized error reports unless you turn them off, and offers 7 interface languages. See [Settings](/docs/app/settings).
+The app updates itself from GitHub Releases, installing a downloaded update when you quit unless you choose to be asked. It sends sanitized error reports unless you turn them off, and offers 7 interface languages. Where the system has a tray, it can keep running there when you close the window. See [Settings](/docs/app/settings).
 
 ## Architecture Overview
 
