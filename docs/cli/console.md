@@ -129,7 +129,9 @@ Top-level `await` works at the prompt, so `await provider.getBlockNumber()` is e
 | -------- | ----------------------------------- | ----------------------------------------- |
 | 1        | `wallet.privateKey` in `cmu.config` | No.                                       |
 | 2        | `PRIVATE_KEY` environment variable  | No. Read from `.env` or the ambient env.  |
-| 3        | Encrypted `.cmu-session`            | Yes — asks once for the session password. |
+| 3        | Encrypted session file in effect    | Yes — asks once for the session password. |
+
+The session file in effect is the project's `.cmu-session`, or `~/.cmu-session` when the project has none; see [Session File](/docs/cli/wallet#session-file).
 
 Without a terminal the session password cannot be asked for. Since 1.7.1 the console then refuses to open, unless `--no-signer` is passed or a key comes from the first two sources:
 

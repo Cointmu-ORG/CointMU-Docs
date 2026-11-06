@@ -20,14 +20,14 @@ cmu mine <subcommand> [options]
 
 ## Requirements
 
-Every subcommand needs an active session in the current directory. `cmu mine` reads two plaintext fields from `.cmu-session`:
+Every subcommand needs an active session: the folder's `.cmu-session`, or else `~/.cmu-session` (see [Session File](/docs/cli/wallet#session-file)). `cmu mine` reads two plaintext fields from it:
 
 | Field           | Used for                                                                               |
 | --------------- | -------------------------------------------------------------------------------------- |
 | `address`       | The etherbase `mine start` sets, and the wallet `mine status` and `--watch` report on. |
 | `activeNetwork` | The saved network whose RPC endpoint is called. Set it with `cmu network use <name>`.  |
 
-The encrypted key is never read, so no subcommand asks for a password. The address is whichever wallet [`cmu wallet use <name>`](/docs/cli/wallet#cmu-wallet-use) last made active in this directory.
+The encrypted key is never read, so no subcommand asks for a password. The address is whichever wallet [`cmu wallet use <name>`](/docs/cli/wallet#cmu-wallet-use) last wrote into that session file.
 
 ::: info
 `cmu mine` uses the saved network the session points at, **not** `defaultNetwork` in `cmu.config.ts`. A project that deploys to the server through `cmu.config.ts` still needs `cmu network use <name>` before `cmu mine` reaches the same node. See [Which Network a Command Uses](/docs/cli/network#which-network-a-command-uses).
@@ -97,7 +97,7 @@ cmu mine start --watch
 
 ### Behavior
 
-1. Reads `address` and `activeNetwork` from `.cmu-session`.
+1. Reads `address` and `activeNetwork` from the session file in effect.
 2. Resolves `activeNetwork` from the saved networks.
 3. Checks that the endpoint answers within 3 seconds, the same check as [`cmu deploy --ping`](/docs/cli/deploy#connectivity-check). Since 1.7.2.
 4. Calls `eth_mining` and `eth_coinbase`. If the node is already mining to a different address, prints a warning and carries on. A node with no etherbase set yet counts as none, not as a failure. Since 1.7.1.
@@ -135,7 +135,7 @@ hint: starting moves its rewards to 0x70997970C51812dc3A010C7d01b50e0d17dc79C8. 
 
 | Cause                           | Message                                                                                |
 | ------------------------------- | -------------------------------------------------------------------------------------- |
-| No `.cmu-session`               | `no active session.`                                                                   |
+| No session file in effect       | `no active session.`                                                                   |
 | Session network no longer saved | `network '<name>' is not saved.`                                                       |
 | Node has no `miner` API         | `network '<name>' has no miner_setEtherbase RPC, so mining cannot be controlled here.` |
 | Node unreachable                | `RPC endpoint <url> is unreachable (timed out after 3000ms).`                          |
@@ -216,7 +216,7 @@ cmu mine stop
 
 ### Behavior
 
-1. Reads `activeNetwork` from `.cmu-session` and resolves it from the saved networks.
+1. Reads `activeNetwork` from the session file in effect and resolves it from the saved networks.
 2. Sends `miner_stop` with no parameters.
 
 The node is not asked whether it was mining first, so stopping an idle node still succeeds and prints the same output.

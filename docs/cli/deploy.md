@@ -97,7 +97,9 @@ The key is resolved from the first source that has one:
 | -------- | ----------------------------------- | ------------------------------------------------------------- |
 | 1        | `wallet.privateKey` in `cmu.config` | Typically wired to `process.env.PRIVATE_KEY`.                 |
 | 2        | `PRIVATE_KEY` environment variable  | Read from `.env` in the project root, or the ambient env.     |
-| 3        | Encrypted `.cmu-session`            | Prompts once for the session password, then caches in memory. |
+| 3        | Encrypted session file in effect    | Prompts once for the session password, then caches in memory. |
+
+The session file in effect is the project's `.cmu-session`, or `~/.cmu-session` when the project has none; see [Session File](/docs/cli/wallet#session-file). Since 1.7.4, a project without its own `.cmu-session` is therefore offered the key of `~/.cmu-session` once you type its password. Before, it had no session key at all.
 
 A config that sets `wallet.privateKey` to a literal key therefore wins over `PRIVATE_KEY`. The scaffolded config sets it to `process.env.PRIVATE_KEY`, so there the two are the same key. Without a `cmu.config.ts/js`, `PRIVATE_KEY` comes first.
 

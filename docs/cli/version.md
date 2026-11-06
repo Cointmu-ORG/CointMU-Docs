@@ -25,12 +25,12 @@ The command reads version metadata from the CLI's own `package.json` and the bui
 
 ```bash
 cmu
-version      : 1.7.3
-codename     : Monsun
-build        : 3d43084
+version      : 1.7.4
+codename     : Aurora
+build        : 8895c61
 architecture : x64
 node         : v24.22.0
-solidity     : 0.8.37+commit.f401782d.Emscripten.clang
+solidity     : 0.8.38+commit.1835d247.Emscripten.clang
 ethers       : 6.17.0
 ```
 
