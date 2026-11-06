@@ -27,7 +27,7 @@ Running `cmu network` with no subcommand lists the saved networks, exactly as `c
 
 ## Which Network a Command Uses
 
-There are two independent ways a command picks its network. The saved networks managed on this page, with the active one recorded in the project's `.cmu-session`, are one. The `networks` and `defaultNetwork` of the project's `cmu.config.ts/js` are the other.
+There are two independent ways a command picks its network. The saved networks managed on this page, with the active one recorded in the [session file in effect](/docs/cli/wallet#session-file) (the folder's `.cmu-session`, else `~/.cmu-session`), are one. The `networks` and `defaultNetwork` of the project's `cmu.config.ts/js` are the other.
 
 | Command                                                        | Network comes from                                          | `-n` names                      |
 | -------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------- |
@@ -219,14 +219,18 @@ hint: list saved networks with `cmu network list`, or add one with `cmu network 
 
 ### Behavior
 
-The command rewrites the `activeNetwork` field inside `.cmu-session` in the current working directory and leaves the rest of the session untouched. Every command that reads the session's network — see [Which Network a Command Uses](#which-network-a-command-uses) — uses the new selection immediately.
+The command rewrites the `activeNetwork` field of the [session file in effect](/docs/cli/wallet#session-file) and leaves the rest of the session untouched: the folder's `.cmu-session` if it has one, otherwise `~/.cmu-session`. Every command that reads the session's network — see [Which Network a Command Uses](#which-network-a-command-uses) — uses the new selection immediately.
 
-Because the selection lives in the session, a project needs a session before it can pick a network: run `cmu wallet use <name>` first, then `cmu network use <network>`. The name is checked before the session, so an unknown name is reported even in a project without one.
+Changing `~/.cmu-session` changes the network of every folder without its own `.cmu-session`. Changing a folder's `.cmu-session` changes only that folder.
+
+Because the selection lives in the session, a session must be in effect before a network can be picked: run `cmu wallet use <name>` first, then `cmu network use <network>`. The name is checked before the session, so an unknown name is reported even where there is no session.
 
 ### Output
 
+Since 1.7.4 the line names the file it wrote, `~/.cmu-session` or `./.cmu-session`:
+
 ```bash
-Active network is now mainnet
+Active network is now mainnet (~/.cmu-session)
 ```
 
 ::: info
@@ -255,19 +259,22 @@ network 'local' is the built-in fallback and cannot be deleted.
 hint: point it at another endpoint with `cmu network save <url> --name local`.
 ```
 
-The command also refuses to delete the network currently selected in the session:
+The command also refuses to delete a network that a session it can find has selected. Since 1.7.4 it checks two files: the [session file in effect](/docs/cli/wallet#session-file), and `~/.cmu-session`, which every folder without its own `.cmu-session` uses. The message names each file that has the network selected, with one hint per file:
 
 ```bash
 error: network delete failed
-network 'staging' is currently active and cannot be deleted.
-hint: switch away first with `cmu network use <name>`.
+network 'staging' is currently active in ./.cmu-session and ~/.cmu-session and cannot be deleted.
+hint: switch ./.cmu-session away first with `cmu network use <name>`.
+hint: switch ~/.cmu-session away first with `cmu network use <name>` in a folder without its own .cmu-session, such as your home folder.
 ```
+
+When only one file has it selected, only that file is named. `cmu network use` writes the session file in effect, which is why the `~/.cmu-session` hint says to run it in a folder without its own `.cmu-session`; run where `~/.cmu-session` is the file in effect, that hint has no folder part. In 1.7.3 and older only the session in the current directory was checked, and the message was `network 'staging' is currently active and cannot be deleted.`
 
 Switch to a different network with `cmu network use` before deleting. Deleting a name that was never saved exits with `network '<name>' is not saved.`
 
-Only the session in the **current** directory is checked. The saved list is shared by every project on the machine, so deleting a network from one project can remove the network another project's session still points at. That project's commands then fail until it picks another one:
+A `.cmu-session` in another folder is **not** checked, since cmu keeps no list of folders, and the output says so after a delete. The saved list is shared by every folder on the machine, so deleting a network can remove the network another folder's `.cmu-session` still points at. Commands in that folder then fail until it picks another one:
 
-| Command in the other project                        | Message                                       |
+| Command in the other folder                         | Message                                       |
 | --------------------------------------------------- | --------------------------------------------- |
 | `cmu network info`, `cmu network ping`              | `active network '<name>' is no longer saved.` |
 | `cmu wallet info`, `cmu wallet balance`, `cmu mine` | `network '<name>' is not saved.`              |
@@ -280,7 +287,10 @@ In 1.7.1 and older, `cmu network delete local` succeeded in a directory without 
 
 ```bash
 Deleted network 'staging'
+hint: another folder's .cmu-session still on 'staging' is not checked: run `cmu network use <name>` there.
 ```
+
+The hint is printed after every delete since 1.7.4.
 
 ---
 
@@ -300,7 +310,7 @@ An active wallet session with a selected network must exist. Each way of not hav
 
 | Condition                              | Message                                             |
 | -------------------------------------- | --------------------------------------------------- |
-| No `.cmu-session`                      | `no active session.`                                |
+| No session file in effect              | `no active session.`                                |
 | Session has no `activeNetwork`         | `no active network in the session.`                 |
 | Selected network no longer saved       | `active network '<name>' is no longer saved.`       |
 
@@ -337,7 +347,7 @@ cmu network ping mainnet
 
 ### Behavior
 
-When `[name]` is supplied, the network is looked up in the saved network store and no session is required. When it is omitted, the command reads `activeNetwork` from `.cmu-session` and therefore requires an active session.
+When `[name]` is supplied, the network is looked up in the saved network store and no session is required. When it is omitted, the command reads `activeNetwork` from the [session file in effect](/docs/cli/wallet#session-file) and therefore requires an active session.
 
 The endpoint is first checked the same way as [`cmu deploy --ping`](/docs/cli/deploy#connectivity-check): it must report its chain ID within 3 seconds. Since 1.7.2. Latency is then measured as the elapsed time around a single `eth_blockNumber` call, so it reflects RPC round-trip time rather than block production speed.
 
@@ -467,7 +477,7 @@ A key in the URL **path** is not recognised and is printed in full, such as the 
 :::
 
 ::: info
-`.cmu-networks.json` is stored in your **home directory**, not in the project. The saved network list is therefore shared by every CointMU project on the machine. The active network *selection* is not shared — it lives in each project's own `.cmu-session` file.
+`.cmu-networks.json` is stored in your **home directory**, not in the project. The saved network list is therefore shared by every CointMU project on the machine. The active network *selection* lives in the [session file in effect](/docs/cli/wallet#session-file): since 1.7.4 that is `~/.cmu-session`, shared by every folder without its own `.cmu-session`, unless the folder has one.
 :::
 
 ::: warning

@@ -18,7 +18,7 @@ Every release of the CointMU CLI published to npm as [`cointmu-cli`](https://www
 
 | Version | Codename | Released   |
 | ------- | -------- | ---------- |
-| 1.7.3   | Monsun   | 2026-10-19 |
+| 1.7.4   | Aurora   | 2026-11-04 |
 
 Upgrade an existing install:
 
@@ -46,6 +46,7 @@ This table is updated by hand with each release. To see what the registry holds 
 
 | Version | Change                                                                                                                | What to do                                                                                                                |
 | ------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| 1.7.4   | A folder without its own `.cmu-session` uses `~/.cmu-session`, and `cmu wallet use` there writes `~/.cmu-session`.    | Check with `cmu wallet info` (`Session file`). For a session in one folder only, use `cmu wallet use <name> --local`.     |
 | 1.6.0   | `cmu wallet login` and `cmu wallet create --login` removed. Both exit `1` before any prompt.                          | `cmu wallet save <name>` then `cmu wallet use <name>`, or `cmu wallet create --save <name>` then `cmu wallet use <name>`. |
 | 1.3.8   | `cmu explorer` returns as a different command: read-only block and contract lookups over RPC.                         | `cmu explorer --block <number>` or `cmu explorer --contract <address>`. See [cmu explorer](/docs/cli/explorer).           |
 | 1.3.7   | `cmu create -t nft` no longer resolves.                                                                               | Use `cmu create -t erc721`.                                                                                               |
@@ -71,6 +72,17 @@ The network flags still work and print a deprecation warning naming the replacem
 | 1.3.7 | Node.js 20.12.0 or newer. `cmu node start` and `cmu test` need Node.js 22 or newer.             |
 | 1.3.5 | Node.js 20 or newer, checked at startup with a readable error instead of a failure mid-command. |
 | 1.3.1 | Node.js 18 or newer.                                                                            |
+
+## 1.7.4 — Aurora {#v1-7-4}
+
+Released 2026-11-04.
+
+- **Added** a global session, `~/.cmu-session`. Every folder without its own `.cmu-session` uses it; a folder's `.cmu-session` still overrides it there. `cmu wallet use <name>` writes the session file in effect, so in a folder without one it now writes `~/.cmu-session` instead of creating `./.cmu-session`. An existing `~/.cmu-session`, written by running `cmu wallet use` in the home folder, becomes the global session without a prompt. See [Session File](/docs/cli/wallet#session-file).
+- **Added** `cmu wallet use <name> --local` writes this folder's `.cmu-session`, creating the override. See [Which File It Writes](/docs/cli/wallet#which-file-it-writes).
+- **Added** after `cmu create`, `cmu compile` or `cmu test` succeeds in a terminal, a notice on stderr when a newer `cointmu-cli` is published. It checks the registry at most once a day in the background. Turn it off with `CMU_NO_UPDATE_CHECK=1` or `NO_UPDATE_NOTIFIER`. See [Update Notice](/docs/cli/update#update-notice).
+- **Changed** messages about the session name the file, `~/.cmu-session` or `./.cmu-session`: `cmu wallet use` ends with a `Session:` line, `cmu wallet info` shows `Session file`, `cmu network use` names the file it wrote, and the `cmu wallet transfer` summary, `wallet save --session`, `wallet delete` and the replace warnings name it too. A replaced `~/.cmu-session` is kept as `~/.cmu-session.bak-<time>`.
+- **Changed** `cmu network delete` also refuses a network that `~/.cmu-session` has selected, not only the one in the current folder's session, and names each file. After a delete it reminds you that another folder's `.cmu-session` is not checked. See [cmu network delete](/docs/cli/network#cmu-network-delete).
+- **Changed** the bundled Solidity compiler is 0.8.38 (was 0.8.37), and `cmu node start` and `cmu test` run on Hardhat 3.21.2 (was 3.19.0). `cmu version` reports the compiler.
 
 ## 1.7.3 — Monsun {#v1-7-3}
 
