@@ -49,6 +49,10 @@ All data is fetched in the background to keep the UI responsive at all times.
 
 A companion Chrome extension connects dApps to the desktop wallet. It is bundled with the app; see [Browser Extension](/docs/app/extension).
 
+### Mobile Wallet
+
+Muvo is a separate wallet app for Android phones, versioned on its own. It has no node of its own and connects to the CointMU nodes on the campus network. See [Muvo Mobile Wallet](/docs/app/muvo).
+
 ### Settings, Updates and Error Reports
 
 The app updates itself from GitHub Releases, installing a downloaded update when you quit unless you choose to be asked. It sends sanitized error reports unless you turn them off, and offers 7 interface languages. Where the system has a tray, it can keep running there when you close the window. See [Settings](/docs/app/settings).
