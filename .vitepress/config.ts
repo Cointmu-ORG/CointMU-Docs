@@ -139,6 +139,7 @@ export default defineConfig({
           { text: "Self-Healing Embedded Node", link: "/docs/app/node" },
           { text: "Settings", link: "/docs/app/settings" },
           { text: "Browser Extension", link: "/docs/app/extension" },
+          { text: "Muvo Mobile Wallet", link: "/docs/app/muvo" },
         ],
       },
     ],
