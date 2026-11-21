@@ -5,7 +5,7 @@ The CointMU Wallet extension connects websites (dApps) to CointMU. It is a Chrom
 The extension has its own version number, separate from the desktop app's. It is not published on the Chrome Web Store or as a GitHub Release; it ships inside the desktop app.
 
 ::: info Verified on
-No Chrome or Chromium browser was available when these docs were written, so the extension's side of this page comes from its source, version 1.0.18 as bundled with desktop 1.8.0. On the desktop side, **Download ZIP** and the bridge listening on `127.0.0.1:8765` were checked on the Linux 1.8.0 build.
+No Chrome or Chromium browser was available when these docs were written, so the extension's side of this page comes from its source, version 1.0.18 as bundled with desktop 1.8.0 to 1.9.3. On the desktop side, **Download ZIP** and the bridge listening on `127.0.0.1:8765` were checked on the Linux 1.8.0 build.
 :::
 
 ## Getting the Extension

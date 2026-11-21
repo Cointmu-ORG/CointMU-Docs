@@ -14,15 +14,15 @@ CointMU runs a background Proof-of-Work node managed by the Electron Main proces
 
 ### Self-Healing Node
 
-When the node's chain database is damaged, CointMU restarts the node up to three times. If that does not help, it moves the damaged chain data aside as a backup and resyncs from the network. It does this at most once per session; after that it stops and asks you to retry. Your wallet keys are never touched. See [Self-Healing Embedded Node](/docs/app/node#self-healing).
+When the node's chain database is damaged, CointMU restarts the node up to three times. If that does not help, it moves the damaged chain data aside as a backup and resyncs from the network. It does this at most once per session; after that it stops and asks you to retry. Since 1.9.2 it also steps in when sync stalls, and **Resync from scratch** is available by hand. Your wallet keys are never touched. See [Self-Healing Embedded Node](/docs/app/node#self-healing).
 
 ### Multi-Asset Wallet
 
-The built-in wallet holds native CMU and ERC-20 tokens, and lists ERC-721 and ERC-1155 NFTs. Accounts come from a 12-word recovery phrase or an imported key, and are stored encrypted with your password. See [Wallet](/docs/app/wallet).
+The built-in wallet holds native CMU and ERC-20 tokens, and lists ERC-721 and ERC-1155 NFTs. Since 1.9.1 tokens sent to your accounts are found on their own, and since 1.9.3 you can name accounts and other addresses. Accounts come from a 12-word recovery phrase or an imported key, and are stored encrypted with your password. See [Wallet](/docs/app/wallet).
 
 ### Integrated Mining
 
-CointMU includes a mining interface for the local CPU miner:
+CointMU includes a mining interface for the local CPU miner, and since 1.9.0 can hand out work to a GPU miner you run yourself (see [Other Connections](/docs/app/settings#other-connections)):
 
 | Control                | Description                                                                                                         |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------- |
@@ -48,6 +48,10 @@ All data is fetched in the background to keep the UI responsive at all times.
 ### Browser Extension
 
 A companion Chrome extension connects dApps to the desktop wallet. It is bundled with the app; see [Browser Extension](/docs/app/extension).
+
+### Mobile Wallet
+
+Muvo is a separate wallet app for Android phones, versioned on its own. It has no node of its own and connects to the CointMU nodes on the campus network. See [Muvo Mobile Wallet](/docs/app/muvo).
 
 ### Settings, Updates and Error Reports
 

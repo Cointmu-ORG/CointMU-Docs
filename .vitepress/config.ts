@@ -50,6 +50,9 @@ export default defineConfig({
   // it leaves the home page as plain "CointMU Docs" instead of repeating it.
   titleTemplate: true,
   description: "The official documentation for the CointMU ecosystem.",
+  // graphify-out is a gitignored local symlink into an Obsidian vault; its
+  // markdown is not part of the site and breaks the build when picked up.
+  srcExclude: ["graphify-out/**"],
   head: [
     ["link", { rel: "icon", href: "/images/logo.png" }],
     [
@@ -136,6 +139,7 @@ export default defineConfig({
           { text: "Self-Healing Embedded Node", link: "/docs/app/node" },
           { text: "Settings", link: "/docs/app/settings" },
           { text: "Browser Extension", link: "/docs/app/extension" },
+          { text: "Muvo Mobile Wallet", link: "/docs/app/muvo" },
         ],
       },
     ],

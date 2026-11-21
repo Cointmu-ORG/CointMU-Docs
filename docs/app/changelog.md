@@ -41,7 +41,7 @@ Each change below was checked against the app source at that version's tag. Chan
 
 | Version | Codename | Released   |
 | ------- | -------- | ---------- |
-| 1.8.0   | Orion    | 2026-11-05 |
+| 1.9.3   | Lagoon   | 2026-11-21 |
 
 Installed apps download new releases from GitHub on their own. 1.7.4 and older restart into the new version right away; from 1.8.0 the update installs when you quit, or after you confirm. See [Updates](/docs/app/installation#updates). To install from scratch, see [Install a Release](/docs/app/installation#install-a-release).
 
@@ -74,8 +74,14 @@ Platforms come from each release's assets: Windows is an NSIS installer (x64), m
 
 Every release from 1.5.0 on bundles the same Geth 1.10.26 build for Linux and Windows, and from 1.5.3 also for macOS, where the app cannot find it ([CointMU-App#102](https://github.com/Cointmu-ORG/CointMU-App/issues/102)). 1.3.0 and 1.4.0 bundle no geth, so their node never starts.
 
+The 1.9.x builds were run off campus, so their node started and answered RPC but found no peers; that says nothing about the release.
+
 | Version                    | Released         | Platforms                             | Electron               | Extension              | Ran on Linux                             |
 | -------------------------- | ---------------- | ------------------------------------- | ---------------------- | ---------------------- | ---------------------------------------- |
+| [1.9.3](#desktop-v1-9-3)   | 2026-11-21       | Windows, macOS (Apple silicon), Linux | 45.3.3                 | 1.0.18                 | Node runs; no peers (off campus)         |
+| [1.9.2](#desktop-v1-9-2)   | 2026-11-19       | Windows, macOS (Apple silicon), Linux | 45.2.3                 | 1.0.18                 | Node runs; no peers (off campus)         |
+| [1.9.1](#desktop-v1-9-1)   | 2026-11-19       | Windows, macOS (Apple silicon), Linux | 45.2.3                 | 1.0.18                 | Node runs; no peers (off campus)         |
+| [1.9.0](#desktop-v1-9-0)   | 2026-11-18       | Windows, macOS (Apple silicon), Linux | 45.2.3                 | 1.0.18                 | Node runs; no peers (off campus)         |
 | [1.8.0](#desktop-v1-8-0)   | 2026-11-05       | Windows, macOS (Apple silicon), Linux | 45.0.0                 | 1.0.18                 | Node runs, finds peers                   |
 | [1.7.4](#desktop-v1-7-4)   | 2026-10-30       | Windows, macOS (Apple silicon), Linux | 44.9.1                 | 1.0.17                 | Node runs, finds peers                   |
 | [1.7.3](#desktop-v1-7-3)   | 2026-10-29       | Windows, macOS (Apple silicon), Linux | 44.9.1                 | 1.0.17                 | Node runs                                |
@@ -121,6 +127,59 @@ In these releases the bundled Linux `geth` is not marked executable, so the node
 | 1.7.4  | Building the Windows installer also needs Go, for the helper that stops geth cleanly on Windows. *(source-only)*                                                                        |
 | 1.6.17 | Node.js 24.15 or newer (`.nvmrc` pins 24); Node.js 22.22.2 or newer works with a warning. npm 12.2 or newer, through Corepack. See [Requirements](/docs/app/installation#requirements). |
 | 1.2.0  | No Node.js or npm version is declared.                                                                                                                                                  |
+
+## Desktop 1.9.3 — Lagoon {#desktop-v1-9-3}
+
+Released 2026-11-21.
+
+**Wallet**
+
+- **Added** **Rename account**, the pencil next to an account's name: a name of 1 to 32 characters. The address does not change.
+- **Added** **Address names** in the account sidebar: names of up to 32 characters for other addresses, kept on this computer only. The Send dialog shows *Saved as* and the name under a recipient you named, and the Wallet and Dashboard activity show the name before the short address. A send always goes to the full address. See [Address Names](/docs/app/wallet#address-names).
+- **Changed** the CMU logo is fixed: its details have no **Logo** or **Hide token**, and a logo saved for CMU in 1.9.1 or 1.9.2 is dropped. *(Dropping is source-only.)*
+- **Added** ERC-1155 tokens you receive are found by the background scan and shown under **NFTs**, with their metadata read through the contract's `uri(id)`. At most 50 NFTs per contract and 500 per account are tracked. *(source-only)*
+
+**Node**
+
+- **Fixed** a quit, restart or update while geth is still repairing its data at startup no longer interrupts it, which made geth rewind the chain on its next start. The stop waits up to 5 minutes, and the window shows *The node is repairing its data and is waiting until it can stop safely…* with the time waited; the tray says *Node is repairing data; waiting to stop safely*. A geth left running by an earlier app process is stopped the same way. On Windows the geth helper waits too. *(source-only)*
+- **Changed** while the node is still starting, **Move…**, **Resync…**, **Clear cache…**, **Delete DAG…** and **Delete backup** are disabled, with the note *The node is still starting. Please wait.* *(source-only: the test node started at once)*
+
+**Other**
+
+- **Changed** Electron 45.3.3 (was 45.2.3). Building needs the same Node.js, npm and Go as 1.8.0.
+
+Renaming an account, **Address names** with its refusals (one of your own addresses, a name with an invisible right-to-left mark), *Saved as* in the Send dialog, and the CMU details without **Logo** were checked on the Linux 1.9.3 build.
+
+## Desktop 1.9.2 — Helix {#desktop-v1-9-2}
+
+Released 2026-11-19.
+
+- **Added** **Settings → Advanced → Data maintenance**: **Resync from scratch** downloads the chain again from block 0, **Clear cache** drops what the app rebuilds from the node, **Mining DAG** deletes geth's mining data, and **Chain data backup** deletes the backup a resync or a repair left. See [Data Maintenance](/docs/app/settings#data-maintenance).
+- **Added** when the node has peers ahead of it but its block has not moved for 5 minutes, CointMU re-registers the network peers, then restarts the node, then shows a *Sync stalled* banner with **Resync from scratch**, one step every 5 minutes. It never resyncs on its own. See [Sync Stalls](/docs/app/node#sync-stalls). *(source-only)*
+- **Changed** custom logos are kept for at most 250 assets; another one asks you to reset one first.
+- **Changed** the ERC-721 NFTs under **NFTs** are found by the same background scan as tokens. *(source-only)*
+- **Changed** token balances are read again only for tokens with a transfer in a new block, and all of them every 100 blocks. *(source-only)*
+- **Fixed** NFT metadata and images are fetched by the app, only over `https://` (`ipfs://` through `https://ipfs.io/ipfs/`) and only from public addresses, so an NFT can no longer make the app reach a device on your network. Images are capped at 5 MB. The window loads only the app's own scripts and images (Content Security Policy). *(source-only)*
+
+The Data maintenance rows, **Clear cache** and its confirmation, a resync of an empty test chain, and the backup it left being removed on its own were checked on the Linux 1.9.3 build.
+
+## Desktop 1.9.1 — Eagle {#desktop-v1-9-1}
+
+Released 2026-11-19.
+
+- **Added** received ERC-20 tokens are found on their own: a background scan reads each account's transfers from block 0 and then follows new blocks. Found tokens with a balance appear under **Tokens**, marked *Auto-detected*; while the first scan runs, the tab shows its progress. At most 200 found tokens per account. *(The scan is source-only: the test node had no blocks.)*
+- **Added** clicking a token opens its details: contract address, balance, a warning that anyone can create a token that copies another's name, **Hide token**, and a custom **Logo** (PNG, JPEG or WebP up to 2 MB, cropped to 128×128 and kept only on this computer). Hidden tokens can be shown again from **Manage hidden accounts**. *(source-only)*
+- **Changed** Send offers every token with a balance and takes the amount exactly, in the token's own decimals. **Max** fills in the CMU balance minus the estimated fee, or a token's whole balance; before, it kept 1 CMU back. Token sends show in the activity as *Sent* and the token symbol. *(source-only)*
+
+## Desktop 1.9.0 — Carina {#desktop-v1-9-0}
+
+Released 2026-11-18.
+
+- **Added** **Settings → Other Connections**, for a GPU miner you install and run yourself; CointMU ships none. **Use an external miner** turns the built-in CPU miner off while the node hands out work over getWork at `http://127.0.0.1:8585`, reachable from this computer only. Mining still has to be started on the Mining page. The panel shows the reward address, the miner's status and an example `ethminer` command, and warns that one GPU can take most block rewards. See [Other Connections](/docs/app/settings#other-connections).
+- **Changed** sending has two steps: the form ends with **Continue** (was **Review & Sign**), then **Confirm send** shows the sender, recipient, asset, amount, fee and total, never masked by Privacy mode, with the **Wallet password** field and **Confirm & Send**. **Back** returns to the form. *(The confirm step is source-only: the test wallet had no balance.)*
+- **Changed** Electron 45.2.3 (was 45.0.0). Building needs the same Node.js, npm and Go as 1.8.0.
+
+**Settings → Other Connections**, switching **Use an external miner** on and off, and the node answering `eth_getWork` with `no mining work available yet` while mining is stopped were checked on the Linux 1.9.3 build. No miner was run.
 
 ## Desktop 1.8.0 — Orion {#desktop-v1-8-0}
 
@@ -431,7 +490,7 @@ The extension is not published on the Chrome Web Store or as its own GitHub rele
 
 | Version | Bundled with desktop |
 | ------- | -------------------- |
-| 1.0.18  | 1.8.0                |
+| 1.0.18  | 1.8.0 to 1.9.3       |
 
 **Download ZIP**, the only way the desktop app hands out the extension, did nothing in installed builds from desktop 1.6.4 to 1.7.4. It works again in desktop 1.8.0 ([CointMU-App#103](https://github.com/Cointmu-ORG/CointMU-App/issues/103)). See [Getting the Extension](/docs/app/extension#getting-the-extension).
 
@@ -452,7 +511,7 @@ The extension is not published on the Chrome Web Store or as its own GitHub rele
 
 ## Extension 1.0.18 {#extension-v1-0-18}
 
-Bundled with desktop 1.8.0. Read from the `extension.zip` inside the 1.8.0 Linux build.
+Bundled with desktop 1.8.0 to 1.9.3. Read from the `extension.zip` inside each of those Linux builds; the 1.9.x ZIPs hold the same files as the extension source at the 1.9.3 tag.
 
 - **Added** a wallet password for standalone mode: imported keys are encrypted with it (PBKDF2-SHA-256, 600,000 iterations, AES-GCM-256), and the wallet locks after 15 idle minutes, when the browser closes, or with **Lock Wallet** ([CointMU-App#107](https://github.com/Cointmu-ORG/CointMU-App/issues/107)). *(source-only)*
 - **Added** keys stored in plain text by older versions are encrypted on first open, under **Protect Your Keys**; the plain-text copy is replaced only after the encrypted one checks out. *(source-only)*
