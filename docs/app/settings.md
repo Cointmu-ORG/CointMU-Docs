@@ -1,10 +1,10 @@
 # Settings
 
-Settings is opened from the sidebar (**Settings**) or from **Preferences** on the Mining page. It has eleven panels. This page describes what each option does in 1.8.0.
+Settings is opened from the sidebar (**Settings**) or from **Preferences** on the Mining page. It has twelve panels. This page describes what each option does in 1.9.3.
 
 **Reset to defaults** at the top reverts all settings to their defaults. It does not touch your wallet, and it does not move the chain data back.
 
-The panels and their options were checked on the running Linux 1.8.0 build with a fresh profile. What an option does was read from the source, and confirmed on Linux where the text says so. Nothing on this page was run on Windows or macOS.
+The panels and their options were checked on the running Linux 1.8.0 build with a fresh profile, and what changed since on the Linux 1.9.3 build. What an option does was read from the source, and confirmed on Linux where the text says so. Nothing on this page was run on Windows or macOS.
 
 ::: info Options removed in 1.8.0
 Options that were saved but had no effect are hidden since 1.8.0: Default currency, Sync mode, Prune old state, Discovery, Enable WebSocket RPC, CORS allowed origins, mining Intensity, Security events notifications, and Require Touch ID / Windows Hello to sign. Their stored values are kept but not used. Launch at login, Open in background, Max peers, Listen port, Log level, Density, Animated transitions and Start mining at launch now take effect ([CointMU-App#104](https://github.com/Cointmu-ORG/CointMU-App/issues/104), closed).
@@ -34,7 +34,7 @@ On the Linux test system there was no tray host, so **Close button** did not app
 
 **Move…** asks for a folder and checks it before you confirm: it must not be the current folder or inside it, must be empty or new, writable, and have room for the data plus 256 MB. CointMU then stops the node and mining, copies the data, checks the copy, and starts the node from the new folder. If anything fails, the copy is removed and the node starts from the old folder again; the old data is never changed. Only afterwards does it offer to delete the old copy (**Delete old copy** or **Keep it**).
 
-The block index (`<userData>/explorer-index`) stays where it is. If the new folder later goes missing, for example on an unplugged drive, the node falls back to the default folder and logs an error. *(source-only: the folder picker could not be shown on the Linux test system.)*
+While the node is still starting, **Move…** is disabled (since 1.9.3). The block index (`<userData>/explorer-index`) stays where it is. If the new folder later goes missing, for example on an unplugged drive, the node falls back to the default folder and logs an error. *(source-only: the folder picker could not be shown on the Linux test system.)*
 
 ## Appearance
 
@@ -142,6 +142,26 @@ Back up your recovery phrase before you use **Reset wallet**. CointMU cannot rec
 
 Shows whether the [browser extension](/docs/app/extension) is linked (**Actively Connected** or **Disconnected**), and lists the sites that have been granted read-only access to your address and chain data, with the date each was connected. **Revoke** removes a site's access.
 
+## Other Connections
+
+Since 1.9.0, this panel is for a GPU miner that you install and run yourself, such as `ethminer`. CointMU does not ship, install or start a miner program.
+
+| Option                | What it does                                                                                                                                                                |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Use an external miner | Off by default. On, the built-in CPU miner stops sealing blocks (geth mines with 0 threads) and the node only hands out work. Switching it while mining restarts the miner. |
+| getWork endpoint      | The node's HTTP RPC, `http://127.0.0.1:8585` unless that port was taken, with **Copy**. Reachable from this computer only; other machines cannot connect.                   |
+| Reward address        | The reward address from [Mining](#mining); blocks the external miner finds are credited there.                                                                              |
+| Status                | *Off* (CPU miner in use), *Mining is stopped* (no work handed out), *Handing out work* (no miner reporting yet), or *External miner reporting* with its hashrate.           |
+| Example command       | `ethminer -P http://127.0.0.1:8585`, with **Copy**. Add `-G` for OpenCL or `-U` for CUDA. Any miner that speaks getWork over HTTP works; a Stratum-only miner does not.     |
+
+The node hands out work only while mining is started: with the external miner on, start mining on the [Mining](/docs/app/mining) page as usual, then start the miner program. The miner talks to the node through `eth_getWork`, `eth_submitWork` and `eth_submitHashrate`, which are part of the `eth` API the node already serves.
+
+::: warning
+A GPU mines far faster than a CPU. One GPU miner can take most block rewards and raises the difficulty for everyone mining on a CPU. Use one only where that is agreed.
+:::
+
+On the Linux 1.9.3 build the panel showed `http://127.0.0.1:8585` and the main wallet as reward address. Switched on with mining stopped, the status read *Mining is stopped. Start it on the Mining page to hand out work.*, and the node answered `eth_getWork` with `no mining work available yet`. Mining was not started and no miner was run, so the other statuses come from the source.
+
 ## External Sources
 
 **Download ZIP** saves the bundled [browser extension](/docs/app/extension) as `CointMU-Extension.zip` where you choose. If the ZIP cannot be found or saved, an error appears under the button. Up to 1.7.4 it did nothing in installed builds ([CointMU-App#103](https://github.com/Cointmu-ORG/CointMU-App/issues/103), fixed in 1.8.0).
@@ -156,6 +176,19 @@ On the Linux 1.8.0 build the button found the ZIP and switched to *Saving...*, a
 | Datadir                   | The node's data folder, `<userData>/cointmu-chaindata/1912` unless [moved](#moving-the-chain-data), and its size on disk. **Reveal** opens it in your file manager.                                                                                                                                                                                                                                                                    |
 | Log level                 | **Info** (default) or **Debug**, passed to the node as `--verbosity 3` or `4`. Saving restarts the node. Warning and Error are no longer offered; a stored Warning or Error runs at Info.                                                                                                                                                                                                                                              |
 | Remove secondary accounts | Deletes every account except the main one from this computer, after a confirmation.                                                                                                                                                                                                                                                                                                                                                    |
+
+### Data Maintenance
+
+Since 1.9.2, **Data maintenance** in this panel has these rows. While the node is still starting, their buttons are disabled.
+
+| Row                 | What it does                                                                                                                                                                                                                                                        |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Resync from scratch | **Resync…** stops the node, sets the local chain data aside as a backup and downloads the chain again from block 0, which can take hours. Wallets, settings, tokens, hidden tokens and custom logos are not affected. Use it when sync stays stuck.                 |
+| Chain data backup   | Shown only while a backup exists: chain data set aside by a resync or by [self-healing](/docs/app/node#self-healing). **Delete backup** removes it. A resync's backup is also removed on its own once the new chain reaches the block the old one had.              |
+| Clear cache         | **Clear cache…** deletes the Explorer's block index, the token and NFT scan results, the NFT images and the app's web cache, and the recent activity cache. All of it is rebuilt from the node. Wallets, settings, custom logos, hidden tokens and chain data stay. |
+| Mining DAG          | The size of the data geth generates for mining (`~/.ethash` on Linux). **Delete DAG…** deletes it; geth generates it again the next time mining starts. Disabled while mining and when there is none.                                                               |
+
+On the Linux 1.9.3 build, **Clear cache** showed its confirmation with the lists above and then *Cache cleared. It is being rebuilt.* A resync of a test chain at block 0 showed *The node restarted from the genesis block and is downloading the chain.*, left a backup row, and the backup was removed on its own within a minute, since the new chain was already at that block. **Delete DAG…** was disabled, with no DAG on that system.
 
 Enable WebSocket RPC and CORS allowed origins were removed in 1.8.0; neither ever had an effect. The node has no WebSocket endpoint, and browsers get no CORS access to it. On the Linux 1.8.0 build the panel read `127.0.0.1:8585`, Log level offered Info and Debug, and the node was started with `--verbosity 3`.
 

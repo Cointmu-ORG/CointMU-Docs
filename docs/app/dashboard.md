@@ -65,6 +65,7 @@ The Your Activity panel aggregates the transaction history for all connected wal
 
 - Displays incoming mining rewards, outbound transfers, and confirmation counts, 10 entries per page.
 - Filterable by wallet using the **All Wallets** dropdown.
+- Since 1.9.3, an address you [named](/docs/app/wallet#address-names) shows its name before the short address.
 - Select **Export** to download the full history as `cointmu-activity.csv`.
 - With no history yet, it shows *No activity yet — Start mining to see rewards*.
 

@@ -19,7 +19,7 @@ The main banner displays the current mining state and provides the primary start
 
 Where CointMU shows a tray icon (see [Settings → General](/docs/app/settings#general)), the tray menu also has **Start mining** and **Stop mining**. *(source-only)*
 
-When mining starts, Geth may first need to generate its DAG; meanwhile the banner shows *Generating Directed Acyclic Graph (DAG) for verification...* until it is done. While the node is still syncing, the banner shows the sync progress and an estimate of the time left. With no peers, it shows a hint instead, such as *Bootnode unreachable — make sure you are connected to the campus network or VPN.* See [Troubleshooting](/docs/app/node#troubleshooting).
+When mining starts, Geth may first need to generate its DAG; meanwhile the banner shows *Generating Directed Acyclic Graph (DAG) for verification...* until it is done. While the node is still syncing, the banner shows the sync progress and an estimate of the time left. With no peers, it shows a hint instead, such as *Bootnode unreachable — make sure you are connected to the campus network or VPN.* See [Troubleshooting](/docs/app/node#troubleshooting). If sync stops moving while peers are ahead, a *Sync stalled* banner appears; see [Sync Stalls](/docs/app/node#sync-stalls).
 
 ## Performance Metrics
 
@@ -42,6 +42,10 @@ The Worker Configuration panel shows how the local machine allocates hardware to
 | Reward Address | The wallet address where block rewards are credited upon a successful solve. It defaults to your main wallet. |
 
 To reduce heat and CPU load, lower the number of worker threads, or turn on **Low priority** in [Settings → Mining](/docs/app/settings#mining) so other programs come first. The **Intensity** row (`Eco`, `Balanced`, `Turbo`) is gone since 1.8.0; it never changed how the miner ran.
+
+### External Miner
+
+Since 1.9.0 you can mine with a GPU miner you run yourself instead of the built-in CPU miner: switch on **Use an external miner** in [Settings → Other Connections](/docs/app/settings#other-connections). **Start mining** on this page then hands out work to that miner, and the CPU miner stays off. Rewards go to the same reward address. *(source-only: no miner was run for these docs)*
 
 ## When Mining Runs
 

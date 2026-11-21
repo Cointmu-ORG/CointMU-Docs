@@ -27,13 +27,13 @@ React Renderer (via IPC Bridge)
 
 ## Node Lifecycle
 
-| Phase    | Behavior                                                                                                                                                                                                  |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Startup  | Geth is spawned automatically when the application launches. On first start, the chain is initialized from the built-in genesis block. With **Low priority** on, it runs at below-normal CPU priority.    |
-| Running  | The node syncs with the CointMU network and serves JSON-RPC requests.                                                                                                                                     |
-| Shutdown | Geth is asked to stop cleanly when the application closes. Since 1.8.0 a quit while the node mines or syncs asks first, unless you turned that off; see [Settings → General](/docs/app/settings#general). |
-| Crash    | After an unexpected exit the node is restarted. More than 5 unrecognized crashes within 10 minutes stops the restarts, and the app asks you to retry.                                                     |
-| Blocked  | If Geth cannot start because of a port or lock conflict, it is not restarted. The app shows the cause and a **Retry** button (see below).                                                                 |
+| Phase    | Behavior                                                                                                                                                                                                                                                                                                                                                                           |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Startup  | Geth is spawned automatically when the application launches. On first start, the chain is initialized from the built-in genesis block. With **Low priority** on, it runs at below-normal CPU priority. A geth left running by an earlier app process is stopped first, once it can be interrupted safely (since 1.9.3).                                                            |
+| Running  | The node syncs with the CointMU network and serves JSON-RPC requests.                                                                                                                                                                                                                                                                                                              |
+| Shutdown | Geth is asked to stop cleanly when the application closes. Since 1.8.0 a quit while the node mines or syncs asks first, unless you turned that off; see [Settings → General](/docs/app/settings#general). Since 1.9.3, if geth is still repairing its data at startup, the stop waits until it can be interrupted safely, up to 5 minutes, and the window says so. *(source-only)* |
+| Crash    | After an unexpected exit the node is restarted. More than 5 unrecognized crashes within 10 minutes stops the restarts, and the app asks you to retry.                                                                                                                                                                                                                              |
+| Blocked  | If Geth cannot start because of a port or lock conflict, it is not restarted. The app shows the cause and a **Retry** button (see below).                                                                                                                                                                                                                                          |
 
 ## Self-Healing
 
@@ -44,7 +44,17 @@ When Geth reports a damaged chain database, CointMU recovers in stages and shows
 3. **Resync.** Geth is re-initialized from the genesis block and resyncs from the network (*Rebuilding chain data and resyncing from the network...*).
 4. **Done, or stop.** On success the banner says *The node has recovered.* Steps 2 and 3 run at most once per session. If they have already run, or they fail, the banner says *Automatic recovery stopped. The node needs your attention.*, with the last Geth error and a **Retry** button.
 
-Your wallet keystore is never touched by recovery.
+Your wallet keystore is never touched by recovery. The backup can be deleted in [Settings → Advanced → Data maintenance](/docs/app/settings#data-maintenance) (since 1.9.2), which also offers **Resync from scratch** by hand.
+
+## Sync Stalls
+
+Since 1.9.2, CointMU also watches for a sync that stops moving: the node has at least one peer, a peer is ahead of it, and its latest block has not changed for 5 minutes. It then takes one step every 5 minutes while the stall lasts, with an app-wide banner (*Sync stalled, trying to recover…*):
+
+1. **Re-register the peers.** The CointMU nodes are dropped and added again, so the node dials them afresh (*Re-registering the network peers.*).
+2. **Restart the node** (*Restarting the node.*).
+3. **Ask you.** The banner says *Sync stalled* and *Automatic recovery did not help. Resync from scratch downloads the chain again; your wallets and settings stay.*, with **Resync from scratch**.
+
+It never resyncs on its own, and it waits while self-healing, a chain data move or a resync runs. With no peers at all it does nothing; that case is the *Bootnode unreachable* hint below. *(source-only: a stall could not be produced off campus)*
 
 ::: warning
 Moving the chain data aside means a full chain resync from the network, which needs peers (the campus network or VPN). Blocks you mined stay on the network; only the local copy is rebuilt.
