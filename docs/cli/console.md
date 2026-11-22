@@ -12,7 +12,7 @@ cmu console [options]
 
 `cmu console` must be executed from the root of a CointMU project when you want it to use that project's network definitions or contract artifacts.
 
-- `cmu.config.ts/js` is read to resolve the network. Without one, the console falls back to the local devnet at `http://127.0.0.1:8585` (chain ID `1912`).
+- `cmu.config.ts/js` is read to resolve the network when the project has one. Without one, `-n` names a saved network, and without `-n` the console uses the local devnet at `http://127.0.0.1:8585` (chain ID `1912`).
 - The RPC endpoint must be reachable. The console pings it first and refuses to open if it does not answer.
 - `getContract()` reads `artifacts/<Name>.json`, so run [`cmu compile`](/docs/cli/compile) before loading a contract.
 
@@ -20,7 +20,7 @@ cmu console [options]
 
 | Flag                   | Description                                                              |
 | ---------------------- | ------------------------------------------------------------------------ |
-| `-n, --network <name>` | Network to connect to, by name from `cmu.config.ts`.                     |
+| `-n, --network <name>` | Network to connect to: from `cmu.config` when the project has one, else a saved network. |
 | `--no-signer`          | Start read-only: skip signer resolution and the session password prompt. |
 | `-y, --yes`            | Skip the confirmation prompt before executing project code.              |
 
@@ -28,13 +28,15 @@ cmu console [options]
 
 ## Network Resolution
 
-The console resolves its network the same way [`cmu deploy`](/docs/cli/deploy) does — from `cmu.config.ts`, not from the saved-network list:
+The console resolves its network the same way [`cmu deploy`](/docs/cli/deploy) does — from the project's `cmu.config` when it has one, otherwise from `-n` and the saved networks; see [Global Networks and the Project Config](/docs/cli/network#global-networks-and-the-project-config):
 
-| Source                              | Used by                                     |
-| ----------------------------------- | ------------------------------------------- |
-| `defaultNetwork` in `cmu.config.ts` | `cmu console`, `cmu explorer`, `cmu deploy` |
-| `-n, --network <name>`              | Overrides `defaultNetwork` for this run     |
-| `cmu network use <name>`            | **Not** consulted by `cmu console`          |
+| Source                              | Used by                                                       |
+| ----------------------------------- | ------------------------------------------------------------- |
+| `defaultNetwork` in `cmu.config.ts` | `cmu console`, `cmu explorer`, `cmu deploy`                   |
+| `-n, --network <name>`              | Overrides `defaultNetwork`; names a saved network without a config |
+| `cmu network use <name>`            | **Not** consulted by `cmu console`                            |
+
+For a saved network, which stores no chain ID, the banner shows the chain ID the node reported when it was pinged.
 
 ::: info
 `cmu network use` sets the active network for [`cmu network`](/docs/cli/network), [`cmu node`](/docs/cli/node), [`cmu mine`](/docs/cli/mine), and [`cmu wallet`](/docs/cli/wallet). It has no effect on the console. If the console opens on a different network than you expected, check `defaultNetwork` in `cmu.config.ts`.

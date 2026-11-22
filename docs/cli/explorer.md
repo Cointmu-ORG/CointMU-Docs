@@ -19,7 +19,7 @@ cmu explorer --contract <address>
 | -------------------------- | ----------------------------------------------------------- |
 | `-b, --block <number>`     | Block number to look up, in decimal.                        |
 | `-c, --contract <address>` | Address to look up.                                         |
-| `-n, --network <name>`     | Network to query, by name from `cmu.config.ts`.             |
+| `-n, --network <name>`     | Network to query: from `cmu.config` when the project has one, else a saved network. |
 | `-y, --yes`                | Skip the confirmation prompt before executing project code. |
 
 `-v, --verbose` is available globally; see [Global Options](/docs/cli/overview#global-options).
@@ -48,15 +48,15 @@ The explorer never signs anything and never unlocks your wallet session. It issu
 
 ## Network Resolution
 
-Like [`cmu console`](/docs/cli/console) and [`cmu deploy`](/docs/cli/deploy), the explorer resolves its target from `cmu.config.ts`, **not** from the saved-network list:
+Like [`cmu console`](/docs/cli/console) and [`cmu deploy`](/docs/cli/deploy), the explorer resolves its target from the project's `cmu.config` when it has one, and otherwise from `-n` and the saved networks — never from the session's active network; see [Global Networks and the Project Config](/docs/cli/network#global-networks-and-the-project-config):
 
-| Source                              | Effect on `cmu explorer`                |
-| ----------------------------------- | --------------------------------------- |
-| `defaultNetwork` in `cmu.config.ts` | The network queried by default          |
-| `-n, --network <name>`              | Overrides `defaultNetwork` for this run |
-| `cmu network use <name>`            | **Not** consulted                       |
+| Source                              | Effect on `cmu explorer`                                       |
+| ----------------------------------- | -------------------------------------------------------------- |
+| `defaultNetwork` in `cmu.config.ts` | The network queried by default                                 |
+| `-n, --network <name>`              | Overrides `defaultNetwork`; names a saved network without a config |
+| `cmu network use <name>`            | **Not** consulted                                              |
 
-Run outside a project, with no `cmu.config.ts` to read, the explorer targets the local devnet at `http://127.0.0.1:8585` (chain ID `1912`).
+With no `cmu.config.ts/js` and no `-n`, the explorer targets the local devnet at `http://127.0.0.1:8585` (chain ID `1912`). Without a config, an unknown `-n` fails before the trust prompt.
 
 A network defined with an empty `url` — as the scaffolded `mainnet` entry ships — fails immediately, before any connection is attempted:
 

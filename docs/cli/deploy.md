@@ -28,14 +28,14 @@ cmu deploy [options]
 | ---------------------- | ------------------------------------------------------------------------ |
 | `-c, --config`         | Show the resolved deploy configuration and exit without deploying.       |
 | `-p, --ping`           | Ping the configured RPC endpoint and exit.                               |
-| `-n, --network <name>` | Specify the target network to deploy to.                                 |
+| `-n, --network <name>` | Target network: from `cmu.config` when the project has one, else a saved network. |
 | `-y, --yes`            | Skip the confirmation prompt before executing project code.              |
 
 `-v, --verbose` is available globally; see [Global Options](/docs/cli/overview#global-options).
 
 ## Trust Model
 
-Deploy scripts are arbitrary code. They run with your full environment, receive your decrypted `PRIVATE_KEY`, and can do anything your user account can. `cmu.config.ts/js` is `require()`d from the working directory and is equally arbitrary.
+Deploy scripts are arbitrary code. They run with your full environment, receive your decrypted `PRIVATE_KEY`, and can do anything your user account can. `cmu.config.ts/js`, when the project has one, is `require()`d from the working directory and is equally arbitrary. A project without one uses `~/.cmu-networks.json`, which is read as JSON and never executed.
 
 This is the same trust model as Hardhat, Foundry, and Truffle — but it never happens silently. Before any project file executes, the CLI lists every one of them and asks:
 
@@ -132,10 +132,10 @@ hint: run this in a terminal, or set PRIVATE_KEY.
 Before executing any deployment script, the command performs the following steps automatically:
 
 1. **Load environment** — reads `.env` from the project root. A missing `.env` is not an error.
-2. **Confirm trust** — lists the project files that will execute and asks for confirmation.
+2. **Resolve network and confirm trust** — resolves `--network`, else `defaultNetwork`, from `cmu.config` when the project has one; otherwise `--network` names a saved network, and without it the local devnet is used. The session's active network is not consulted; see [Which Network a Command Uses](/docs/cli/network#which-network-a-command-uses). Without a `cmu.config` the network is resolved before the trust prompt, so an unknown name fails without asking. With one, the config is code, so the prompt comes first and the network right after it.
 3. **Compile** — triggers `cmu compile` to ensure all contract artifacts are up to date.
-4. **Resolve network** — resolves `--network`, else `defaultNetwork`, from `cmu.config`. The session's active network is not consulted; see [Which Network a Command Uses](/docs/cli/network#which-network-a-command-uses).
-5. **Resolve and validate the key** — verifies it produces a valid wallet address.
+4. **Read the chain ID** — a saved network stores none, so it is read from the node; an unreachable node stops the deploy here. A `cmu.config` network uses its configured `chainId`.
+5. **Resolve and validate the key** — verifies it produces a valid wallet address. The session password, if one is needed, is asked for here, after compiling.
 6. **Print deploy configuration** — outputs a summary before any script is executed.
 
 ```bash

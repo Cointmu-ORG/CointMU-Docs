@@ -17,11 +17,11 @@ This guide walks through creating and deploying a basic ERC20 token on CointMU u
 If you don't have an existing project, create one using the `erc20` template:
 
 ```bash
-cmu create my-token --template erc20 --language typescript
+cmu create my-token --template erc20 --language typescript --local-config
 cd my-token
 ```
 
-This generates the full project structure including `contracts/`, `deploy/`, and `artifacts/`.
+This generates the full project structure including `contracts/`, `deploy/`, and `artifacts/`. `--local-config` gives the project its own `cmu.config.ts`, which this guide edits below. Without it, the project uses the networks saved with `cmu network save` instead, and you deploy with `cmu deploy -n <name>`; see [Global Networks and the Project Config](/docs/cli/network#global-networks-and-the-project-config).
 
 The `erc20` template already contains `contracts/StandardERC20.sol` and `deploy/01_standarderc20.ts`. Delete both if you only want the token below; otherwise `cmu deploy` runs that script too.
 
