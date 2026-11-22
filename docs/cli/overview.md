@@ -81,7 +81,7 @@ The DevNet commands need a newer runtime than the rest of the CLI because they r
 
 ## Executing Project Code
 
-`cmu compile`, `cmu deploy`, `cmu test`, `cmu console`, and `cmu explorer` execute files from your project directory — `cmu.config.ts/js` is `require()`d, and every script in `deploy/` runs with your decrypted `PRIVATE_KEY` in its environment. The CLI lists those files and asks for confirmation before any of them run.
+`cmu compile`, `cmu deploy`, `cmu test`, `cmu console`, and `cmu explorer` execute files from your project directory — `cmu.config.ts/js` is `require()`d when the project has one, and every script in `deploy/` runs with your decrypted `PRIVATE_KEY` in its environment. The CLI lists those files and asks for confirmation before any of them run.
 
 Pass `-y, --yes` to skip the prompt in a pipeline you trust. See [the trust model](/docs/cli/deploy#trust-model) on the `cmu deploy` page.
 

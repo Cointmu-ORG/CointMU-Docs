@@ -28,6 +28,7 @@ If validation fails, the command exits before any files are generated.
 | --------------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `-t, --template <template>` | Select the scaffold template to generate.     | `blank`, `erc20`, `erc721`, `erc1155`, `dao`, `marketplace`, `staking`, `airdrop`, `vault`, `kyberion` |
 | `-l, --language <language>` | Select the project language for the scaffold. | `typescript`, `javascript`                                                                              |
+| `--local-config`            | Write a `cmu.config` into the project instead of using the global `~/.cmu-networks.json`. | —                                                                    |
 
 `-v, --verbose` is available globally; see [Global Options](/docs/cli/overview#global-options).
 
@@ -48,8 +49,21 @@ Prompt order:
 1. **Project name** — if not provided as an argument.
 2. **Language** — if `--language` is not provided.
 3. **Template** — if `--template` is not provided.
+4. **Network config** — `Global (~/.cmu-networks.json)`, the default, or `This project (cmu.config)`. Asked only in a terminal and only without `--local-config`.
 
 All values are validated against their respective allowed values before project generation begins.
+
+### Network Config
+
+A project on the global config has no `cmu.config` of its own: `cmu deploy -n <name>`, `cmu console` and `cmu explorer` use the networks saved with [`cmu network save`](/docs/cli/network#cmu-network-save), and without `-n` the local devnet. A project with its own config reads only that file; see [Global Networks and the Project Config](/docs/cli/network#global-networks-and-the-project-config).
+
+Without a terminal — a script, a CI job — the question is not asked and the global default is used. Pass `--local-config` to get a project config there:
+
+```bash
+cmu create my-token -t erc20 -l typescript --local-config
+```
+
+Projects created by an older `cmu` keep their `cmu.config` and work unchanged.
 
 ## Available Templates
 
@@ -68,7 +82,7 @@ All values are validated against their respective allowed values before project 
 
 ## Generated Files
 
-A TypeScript `erc20` project, for example:
+A TypeScript `erc20` project with its own config (`--local-config`), for example. On the global config, `cmu.config.ts` is left out:
 
 ```bash
 my-token/
@@ -85,7 +99,7 @@ my-token/
 └── tsconfig.json
 ```
 
-A JavaScript project has `cmu.config.js`, a `.js` deploy script and test, and no `tsconfig.json`.
+A JavaScript project has `cmu.config.js` (with its own config), a `.js` deploy script and test, and no `tsconfig.json`.
 
 The generated `cmu.config.ts` (`cmu.config.js` uses `module.exports =` instead of `export default`):
 

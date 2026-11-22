@@ -35,11 +35,14 @@ There are two independent ways a command picks its network. The saved networks m
 | `cmu mine start`, `cmu mine stop`, `cmu mine status`           | The session's `activeNetwork`                               | —                               |
 | `cmu network info`, `cmu network ping`                         | The session's `activeNetwork`, or the name passed to `ping` | —                               |
 | `cmu node connect`                                             | `-n`, else the session's `activeNetwork`, else `local`      | A saved network                 |
-| `cmu deploy`, `cmu console`, `cmu explorer`                    | `-n`, else `defaultNetwork` in `cmu.config.ts/js`           | A network in `cmu.config.ts/js` |
+| `cmu deploy`, `cmu console`, `cmu explorer` with a `cmu.config` | `-n`, else `defaultNetwork` in `cmu.config.ts/js`          | A network in `cmu.config.ts/js` |
+| `cmu deploy`, `cmu console`, `cmu explorer` without one        | `-n`, else the local devnet                                 | A saved network                 |
 
-`cmu network use` therefore has no effect on `cmu deploy`, `cmu console` or `cmu explorer`, and `defaultNetwork` has no effect on `cmu wallet` or `cmu mine`. The [coin symbol](#coin-symbol) that amounts are labelled with comes from the same place as the network. To deploy to a server and mine on it, point both at it: set `defaultNetwork` (or pass `-n`) in the config, and run `cmu network use <name>`.
+`cmu network use` therefore has no effect on `cmu deploy`, `cmu console` or `cmu explorer`, and `defaultNetwork` has no effect on `cmu wallet` or `cmu mine`. The [coin symbol](#coin-symbol) that amounts are labelled with comes from the same place as the network. To deploy to a server and mine on it, point both at it: pass `-n` (or set `defaultNetwork` in the project's config), and run `cmu network use <name>`.
 
-The same `-n` flag means different things. With a saved network called `geth` that `cmu.config.ts` does not define, `cmu node connect -n geth` connects, while `cmu deploy -n geth` fails:
+### Global Networks and the Project Config
+
+Saved networks are global: a folder without `cmu.config.ts/js` can deploy to any of them with `-n`. A project's `cmu.config` overrides them as a whole file. Where one exists, only it is read, exactly as before, and a network it does not define is an error even when a saved network has that name. With a saved network called `geth`, `cmu deploy -n geth` deploys from a folder without a config, and fails in a project whose config does not define it:
 
 ```bash
 error: deploy failed
@@ -47,7 +50,17 @@ network 'geth' is not defined in cmu.config.js.
 hint: add it under `networks`, or pick one that is already defined.
 ```
 
-Outside a project, with no `cmu.config.ts/js`, `cmu deploy`, `cmu console` and `cmu explorer` target `http://127.0.0.1:8585` (chain ID `1912`) directly. They do not read the saved `local` entry, so re-saving `local` with another URL does not move them.
+Without a config, a name that is not saved fails before the trust prompt and before anything is compiled:
+
+```bash
+error: deploy failed
+network 'nope' is not saved in ~/.cmu-networks.json, and this folder has no cmu.config.ts or cmu.config.js.
+hint: list saved networks with `cmu network list`, save it with `cmu network save <url> --name nope`, or define it in a cmu.config.js here.
+```
+
+A saved network stores no chain ID. `cmu deploy` reads it from the node before running any deploy script and passes it on as `CMU_CHAIN_ID`; if the node cannot be reached, the deploy stops there. `cmu deploy --config` does not contact the node and shows the chain ID as `not configured (read from the node when deploying)`.
+
+Without `-n` and without a config, `cmu deploy`, `cmu console` and `cmu explorer` target `http://127.0.0.1:8585` (chain ID `1912`) directly, never the session's active network: deploying anywhere else always takes an explicit `-n`. `-n local` does the same. Neither reads the saved `local` entry, so re-saving `local` with another URL does not move them.
 
 ---
 
