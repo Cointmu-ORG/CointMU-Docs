@@ -62,6 +62,8 @@ Report a security issue privately through GitHub's private vulnerability reporti
 2. Go to the **Security** tab and select **Report a vulnerability**.
 3. Fill in the form and submit it. Only you and the maintainers can see the report.
 
+We aim to acknowledge reports within 72 hours and to provide a remediation timeline after triage. We will coordinate a disclosure date with you once a fix is available.
+
 ### What a Good Report Contains
 
 - **Product and version**: which product, and which version (for the CLI, the output of [`cmu version`](/docs/cli/version)). For the docs site, the page URL.
