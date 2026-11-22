@@ -142,6 +142,10 @@ export default defineConfig({
           { text: "Muvo Mobile Wallet", link: "/docs/app/muvo" },
         ],
       },
+      {
+        text: "Community",
+        items: [{ text: "Hall of Fame", link: "/docs/hall-of-fame" }],
+      },
     ],
   },
 });
