@@ -134,7 +134,7 @@ Before executing any deployment script, the command performs the following steps
 1. **Load environment** — reads `.env` from the project root. A missing `.env` is not an error.
 2. **Resolve network and confirm trust** — resolves `--network`, else `defaultNetwork`, from `cmu.config` when the project has one; otherwise `--network` names a saved network, and without it the local devnet is used. The session's active network is not consulted; see [Which Network a Command Uses](/docs/cli/network#which-network-a-command-uses). Without a `cmu.config` the network is resolved before the trust prompt, so an unknown name fails without asking. With one, the config is code, so the prompt comes first and the network right after it.
 3. **Compile** — triggers `cmu compile` to ensure all contract artifacts are up to date.
-4. **Read the chain ID** — a saved network stores none, so it is read from the node; an unreachable node stops the deploy here. A `cmu.config` network uses its configured `chainId`.
+4. **Read the chain ID** — a saved network stores none, so it is read from the node; an unreachable node stops the deploy here. A `cmu.config` network uses its configured `chainId`, or reads it from the node when it sets none.
 5. **Resolve and validate the key** — verifies it produces a valid wallet address. The session password, if one is needed, is asked for here, after compiling.
 6. **Print deploy configuration** — outputs a summary before any script is executed.
 

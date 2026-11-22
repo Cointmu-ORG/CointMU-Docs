@@ -36,7 +36,7 @@ The console resolves its network the same way [`cmu deploy`](/docs/cli/deploy) d
 | `-n, --network <name>`              | Overrides `defaultNetwork`; names a saved network without a config |
 | `cmu network use <name>`            | **Not** consulted by `cmu console`                            |
 
-For a saved network, which stores no chain ID, the banner shows the chain ID the node reported when it was pinged.
+The banner shows the `chainId` configured in `cmu.config` when the network sets one. Otherwise — a saved network, which stores none, or a `cmu.config` network without `chainId` — it shows the chain ID the node reported when it was pinged.
 
 ::: info
 `cmu network use` sets the active network for [`cmu network`](/docs/cli/network), [`cmu node`](/docs/cli/node), [`cmu mine`](/docs/cli/mine), and [`cmu wallet`](/docs/cli/wallet). It has no effect on the console. If the console opens on a different network than you expected, check `defaultNetwork` in `cmu.config.ts`.
